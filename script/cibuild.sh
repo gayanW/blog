@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 # skip if build is triggered by pull request
 if [ $TRAVIS_PULL_REQUEST == "true" ]; then
@@ -26,3 +27,5 @@ git config user.name "Gayan Weerakutti"
 git add --all
 git commit -a -m "Travis #$TRAVIS_BUILD_NUMBER"
 git push --force origin gh-pages
+
+set +x
