@@ -24,6 +24,9 @@ permalink: /:title/
 twitter_username: jekyllrb
 github_username:  jekyll
 
+author:
+  name: Gayan Weerakutti
+
 # Build settings
 markdown: kramdown
 theme: jekyll-theme-linuxdev
