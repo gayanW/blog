@@ -20,6 +20,9 @@ git clone https://${GH_TOKEN}@github.com/linuxdevspace/blog.git --branch gh-page
 # build with Jekyll into "_site"
 bundle exec jekyll build
 
+# copy CNAME
+cp CNAME _site
+
 # push
 cd _site
 git config user.email "gayan@linuxdeveloper.space"
