@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Default Title</title>
+    <meta charset="utf-8">
+
+    
+        <title>Install Windows after Ubuntu/Linux</title>
+    
+
+    <meta name="description" content="A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
+">
+
+    
+
+    <link rel="icon" href="/assets/img/blog.png">
+    <link href="https://fonts.googleapis.com/css?family=Alegreya|Roboto|Roboto+Mono" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/syntax/github.css">
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="header">
+			<h1><a href="/">Linux Developer Space</a></h1>
+			<ul>
+				
+				<li>
+					<a href="/">Home</a>
+				</li>
+				
+				<li>
+					<a href="/about">About</a>
+				</li>
+				
+			</ul>
+		</div>
+
+        <div class="post">
+
+  <div class="post__title">
+    <h1>Install Windows after Ubuntu/Linux</h1>
+  </div>
+  <div class="post__date">
+    <p>October 11, 2017</p>
+  </div>
+  <div class="post__meta">
+    <p></p>
+  </div>
+  <div class="post__content"?>
+    <p>As you know, the most common, and probably the most recommended way of dual booting Ubuntu and Windows is to install Windows first and then Ubuntu. But what if you want to install Windows second on a computer with Ubuntu/Linux already installed?</p>
+
+<p>This guide assumes that you have Ubuntu already installed on your system, and will guide you through installing Windows 7/8/8.1/10 when you have a working Ubuntu/Linux partition.</p>
+
+<p>The problem here is that the Windows installer tends to overwrite Grub bootloader or whatever making only the Windows installation bootable. But the good news is that your Linux partition is untouched, including the original bootloader and the other Grub configurations. So restoring or recovering the Grub is just a matter of running a few commands on the terminal.</p>
+
+<h4 id="install-windows-on-a-separate-partition">Install Windows on a Separate Partition</h4>
+
+<p>If your Ubuntu installation occupies the entire hard drive, to be able to create free space for the Windows installation, you may have to shrink an existing partition using a disk utility like GParted. GParted comes preinstalled on Ubuntu LiveCD.</p>
+
+<h4 id="boot-into-a-windows-installation-media-and-complete-with-the-installation">Boot into a Windows installation media and complete with the installation</h4>
+
+<p>Once installed, because of Microsoft’s false assumption that there are no non-Microsoft operating systems you’ll be taken straight into Windows.</p>
+
+<h4 id="restore--reinstall-grub-2-with-a-ubuntu-live-media">Restore / Reinstall Grub 2 with a Ubuntu Live Media</h4>
+
+<ol>
+  <li>Now boot into a Ubuntu Live/USB or CD.</li>
+  <li>Open a terminal. (Ctrl + Alt + t)</li>
+  <li>Use lsblk, blkid commands or GParted to identify your Linux root, and boot partitions. You may or may not have a separate boot partition.</li>
+  <li>
+    <p>Find Linux Partitions</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> $ lsblk -f
+ NAME                  FSTYPE     MOUNTPOINT
+ sda                                                                            
+ ├─sda1                ext4       /boot
+ ├─sda2                ext4       /
+ ├─sda3                ntfs       
+</code></pre></div>    </div>
+
+    <p>In my case,</p>
+
+    <p><code class="highlighter-rouge">/dev/sda1</code> is the Linux boot partition</p>
+
+    <p><code class="highlighter-rouge">/dev/sda2</code> is the Linux root partition</p>
+
+    <p><code class="highlighter-rouge">/dev/sda3</code> is the Windows partition</p>
+  </li>
+  <li>
+    <p>Setup a Chroot Environment</p>
+
+    <p>Now we’ll be repairing our old grub bootloader in a chroot environment.</p>
+
+    <p>Mount your root filesystem under <code class="highlighter-rouge">/mnt</code></p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> sudo mount /dev/sda2 /mnt/
+</code></pre></div>    </div>
+
+    <blockquote>
+      <p>If you’re using BTRFS (New Linux B-Tree File System) instead of EXT4, the above command should change to 
+sudo mount -t btrfs -o subvol=@ /dev/sda2 /mnt/</p>
+    </blockquote>
+
+    <p>Run <code class="highlighter-rouge">ls /mnt</code> to verify that the correct partition is mounted. It should list the content of your root.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> $ ls /mnt
+ bin   dev  home        lib64       media  opt   root  sbin  sys  usr  vmlinuz
+ boot  etc  initrd.img  lost+found  mnt    proc  run   srv   tmp  var  vmlinuz.old
+</code></pre></div>    </div>
+
+    <p>Mount the boot partition. (SKIP if you don’t have a separate boot partition)</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> sudo mount /dev/sda1 /mnt/boot
+</code></pre></div>    </div>
+
+    <p>If you have an EFI partition you should mount that also. It is basically a small FAT32 partition around 100mb. Please refer to the section on how to <a href="#reinstalling-grub-in-an-efi-based-system">reinstall Grub in an EFI system</a>.</p>
+
+    <p>Bind the directories, so grub can detect other operating systems, like so.</p>
+
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nb">sudo </span>mount <span class="nt">--bind</span> /dev /mnt/dev
+ <span class="nb">sudo </span>mount <span class="nt">--bind</span> /dev/pts /mnt/dev/pts
+ <span class="nb">sudo </span>mount <span class="nt">--bind</span> /proc /mnt/proc
+ <span class="nb">sudo </span>mount <span class="nt">--bind</span> /sys /mnt/sys
+</code></pre></div>    </div>
+
+    <p>Let’s chroot into our existing Ubuntu/Linux system on the hard disk.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> sudo chroot /mnt
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Reinstall Grub.</p>
+
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> grub-install /dev/sda <span class="o">(</span>specify the disk <span class="sb">`</span>/dev/sdX<span class="sb">`</span>, not <span class="sb">`</span>/dev/sdaX<span class="sb">`</span><span class="o">)</span>
+ grub-install <span class="nt">--recheck</span> /dev/sdX
+ <span class="nb">exit</span>
+</code></pre></div>    </div>
+
+    <p>Once you’ve successfully reinstalled Grub, restart the computer. On next reboot Grub will be the default bootloader and you’ll be presented with a list of operating systems to choose from (Ubuntu and Windows, of course).</p>
+  </li>
+</ol>
+
+<h4 id="reinstalling-grub-in-an-efi-based-system">Reinstalling Grub in an EFI Based System</h4>
+
+<p>Reinstalling Grub bootloader in a UEFI based computer is no different from installing Grub on a legacy Bios system. Here we also mount the EFI partition before chrooting, as we’d do with the boot partition.</p>
+
+<p>Case #2</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ lsblk -f
+NAME                  FSTYPE     MOUNTPOINT
+sda                                                                            
+├─sda1                ext4       /boot/efi
+├─sda2                ext4       /
+├─sda3                ntfs       
+</code></pre></div></div>
+
+<p>Here <code class="highlighter-rouge">/dev/sda1</code> is the EFI partition and <code class="highlighter-rouge">/dev/sda2</code> is the root.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo mount /dev/sda2 /mnt/
+( For BTRFS: sudo mount -t btrfs -o subvol=@ /dev/sda5 /mnt/ )
+</code></pre></div></div>
+
+<p>Mount EFI partition under ‘/mnt/boot/efi’</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo mount /dev/sda2 /mnt/boot/efi
+</code></pre></div></div>
+
+<blockquote>
+  <p>Forgetting to do so will result in errors being thrown while trying to execute grub-install: “/boot/efi does not appear to be the EFI partition”</p>
+</blockquote>
+
+<p>As shown previously, bind the <code class="highlighter-rouge">/dev</code>, <code class="highlighter-rouge">/dev/pts</code>, <code class="highlighter-rouge">/proc</code>, and <code class="highlighter-rouge">/sys</code> directories.</p>
+
+<p>Finally,</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>chroot /mnt
+grub-install
+<span class="nb">exit</span>
+</code></pre></div></div>
+
+<p>In some rare occasions, Grub might not detect Windows. In that case just login to Ubuntu (installed one on the disk, not the bootable Live USB/CD) and execute,</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>os-prober
+<span class="nb">sudo </span>update-grub
+<span class="nb">sudo </span>reboot
+</code></pre></div></div>
+
+<p>Happy Dual-Booting!</p>
+
+  </div>
+
+</div>
+
+
+	<div class="footer">
+		<p>&copy; 2018 <a href="/">Gayan Weerakutti</a>, unless otherwise noted.</p>
+	</div>
+	</div>
+</body>
+
+</html>
