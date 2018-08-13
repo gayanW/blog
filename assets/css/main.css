@@ -14,7 +14,7 @@ body { color: #272727; background: #FFFFFF; font-family: 'Alegreya', serif; font
 
 h1 { margin-bottom: 5px; }
 
-p { font-size: 1em; line-height: 150%; }
+p { font-size: 1em; line-height: 150%; margin-bottom: 12px; }
 
 a { color: inherit; text-decoration: none; background-repeat: no-repeat; background-position: bottom; background-size: 100% 6px; background-image: linear-gradient(transparent, transparent 5px, #ccc 5px, #ccc); }
 
@@ -57,13 +57,13 @@ hr { border: 0; border-bottom: 1px solid #999; }
 .post { padding-bottom: 30px; }
 .post__title { display: block; margin-top: 20px; margin-bottom: 6px; }
 .post__title h1 { display: inline-block; font-size: 1.6em; font-weight: 700; padding-right: 10px; padding-bottom: 2px; text-decoration: none; }
-.post__date p { font-size: 1em; font-style: italic; }
-.post__content { padding-top: 40px; }
+.post__date p { font-size: 1em; font-style: italic; margin-bottom: 3px; }
+.post__content { padding-top: 30px; }
 .post__content h1 { font-size: 1.4em; font-weight: 700; margin-top: 50px; margin-bottom: 10px; }
 .post__content h2 { font-size: 1.2em; font-weight: 700; margin-top: 25px; margin-bottom: 8px; }
 .post__content h3 { font-size: 1.1em; font-weight: 600; margin-top: 20px; margin-bottom: 7px; }
 .post__content h4 { font-size: 1.0em; font-weight: 600; margin-top: 15px; margin-bottom: 6px; }
-.post__content p { font-size: 1em; line-height: 150%; margin-bottom: 15px; }
+.post__content p { font-size: 1em; line-height: 150%; }
 .post__content a { padding-bottom: 1px; }
 .post__content a:hover { text-decoration: none; }
 .post__content strong { font-weight: 700; }
