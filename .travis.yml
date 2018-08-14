@@ -2,7 +2,7 @@ language: ruby
 # only run CI-builds on master branch
 branches:
   only:
-    - master
+    - testing
 
 # set execution permission on our build script
 before_script:
