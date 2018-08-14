@@ -29,9 +29,13 @@ author:
 
 # Build settings
 markdown: kramdown
-theme: jekyll-theme-linuxdev
 plugins:
   - jekyll-feed
+
+# Theme 
+theme: jekyll-theme-linuxdev
+post_order: reversed
+
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
