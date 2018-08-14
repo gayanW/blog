@@ -19,7 +19,7 @@ git clone https://${GH_TOKEN}@github.com/linuxdevspace/blog.git --branch gh-page
 
 # update all gems to the latest 
 if [ $BUNDLE_UPDATE == "true" ]; then
-  bundle update
+  bundle install --deployment
 fi
 
 # build with Jekyll into "_site"
