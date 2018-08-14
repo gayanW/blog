@@ -20,6 +20,11 @@ git clone https://${GH_TOKEN}@github.com/linuxdevspace/blog.git --branch gh-page
 # make sure all dependencies in the Gemfile are available
 bundle install --no-deployment
 
+# update all gems to the latest
+if [ $BUNDLE_UPDATE == "true" ]; then
+  bundle update
+fi
+
 # build with Jekyll into "_site"
 bundle exec jekyll build
 
