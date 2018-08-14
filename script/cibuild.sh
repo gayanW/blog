@@ -17,10 +17,12 @@ mkdir _site
 # clone remote repo to "_site"
 git clone https://${GH_TOKEN}@github.com/linuxdevspace/blog.git --branch gh-pages _site
 
+#  make sure all dependencies in the Gemfile are available 
+bundle install --deployment
+
 # update all gems to the latest 
 if [ $BUNDLE_UPDATE == "true" ]; then
   bundle update
-  git add Gemfile.lock
 fi
 
 # build with Jekyll into "_site"
