@@ -17,7 +17,7 @@ mkdir _site
 # clone remote repo to "_site"
 git clone https://${GH_TOKEN}@github.com/linuxdevspace/blog.git --branch gh-pages _site
 
-rm Gemfile.lock
+gem install bundler
 
 #  make sure all dependencies in the Gemfile are available 
 # bundle install --deployment
