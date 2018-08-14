@@ -20,7 +20,8 @@ git clone https://${GH_TOKEN}@github.com/linuxdevspace/blog.git --branch gh-page
 gem install bundler
 
 #  make sure all dependencies in the Gemfile are available 
-bundle install --no-deployment
+# bundle install --no-deployment
+bundle install
 
 # update all gems to the latest 
 if [ $BUNDLE_UPDATE == "true" ]; then
