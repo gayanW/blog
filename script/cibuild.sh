@@ -22,7 +22,9 @@ bundle install --deployment
 
 # update all gems to the latest 
 if [ $BUNDLE_UPDATE == "true" ]; then
+  git add Gemfile.lock
   bundle update
+  git add Gemfile.lock
 fi
 
 # build with Jekyll into "_site"
