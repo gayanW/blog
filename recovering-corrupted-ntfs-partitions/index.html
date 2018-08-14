@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Default Title</title>
+    <meta charset="utf-8">
+
+    
+        <title>Recovering corrupted NTFS partitions in a Linux machine</title>
+    
+
+    <meta name="description" content="A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
+">
+
+    
+
+    <link rel="icon" href="/assets/img/blog.png">
+    <link href="https://fonts.googleapis.com/css?family=Alegreya|Roboto|Roboto+Mono" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/syntax/github.css">
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="header">
+			<h1><a href="/">Linux Developer Space</a></h1>
+			<ul>
+				
+				<li>
+					<a href="/">Home</a>
+				</li>
+				
+				<li>
+					<a href="/about">About</a>
+				</li>
+				
+			</ul>
+		</div>
+
+        <div class="post">
+
+  <div class="post__title">
+    <h1>Recovering corrupted NTFS partitions in a Linux machine</h1>
+  </div>
+  <div class="post__date">
+    <p>August 14, 2018</p>
+  </div>
+  <div class="post__meta">
+    <p></p>
+  </div>
+  <div class="post__content"?>
+    <h4 id="what-if-my-partition-is-not-showing-up-or-gone-missing">What if my partition is not showing up or gone missing?</h4>
+
+<p>In that case, TestDisk could help. It is a disk utility designed to help people recover their lost partitions.</p>
+
+<p>To install it, here in my case on Debian, I’ll do</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ sudo apt-get install testdisk
+$ testdisk
+</code></pre></div></div>
+
+<p>TestDisk has a QUICK SEARCH option which can search and list all your missing partitions if there’s any. Most probably your missing partitions should have appeared by now. If not, try running a DEEPER SEARCH. Once it found any, use the WRITE option of TestDisk which will re-write the partition table for you.</p>
+
+<p>Restart your computer and your missing partitions should now show up.</p>
+
+<p>I won’t go into detail. For a more thorough guide, follow the <a href="testdisk-step-by-step">Step By Step guide</a> from the official Wiki.</p>
+
+<h4 id="how-to-fix-when-my-ntfs-goes-raw">How to fix when my NTFS goes RAW?</h4>
+
+<p>It’s better to use Windows utilities when it comes to dealing with NTFS.</p>
+
+<ol>
+  <li>Boot into a Windows Recovery Disk.</li>
+  <li>Then go into ‘System Recovery Options’ menu.</li>
+  <li>Open the command prompt window.</li>
+  <li>
+    <p>Use one or more of the following commands to find out the label of your corrupted partition.</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> diskpart list disk
+ diskpart select disk
+ diskpart list volumes
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Once done exit from diskpart and run</p>
+
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> chkdsk /f /r D:
+ where D: is the drive letter of the corrupted partition. 
+</code></pre></div>    </div>
+  </li>
+</ol>
+
+<p>If you have got better solutions, let us know in the comment section.</p>
+
+
+  </div>
+
+</div>
+
+
+	<div class="footer">
+		<p>&copy; 2018 <a href="/">Gayan Weerakutti</a>, unless otherwise noted.</p>
+	</div>
+	</div>
+</body>
+
+</html>

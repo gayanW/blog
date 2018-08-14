@@ -1,5 +1,46 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.3">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-08-13T10:56:15+00:00</updated><id>/</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
-</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Install Windows after Ubuntu/Linux</title><link href="/install-windows-after-linux/" rel="alternate" type="text/html" title="Install Windows after Ubuntu/Linux" /><published>2017-10-11T05:30:18+00:00</published><updated>2017-10-11T05:30:18+00:00</updated><id>/install-windows-after-linux</id><content type="html" xml:base="/install-windows-after-linux/">&lt;p&gt;As you know, the most common, and probably the most recommended way of dual booting Ubuntu and Windows is to install Windows first and then Ubuntu. But what if you want to install Windows second on a computer with Ubuntu/Linux already installed?&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.3">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-08-14T05:50:54+00:00</updated><id>/</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
+</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Recovering corrupted NTFS partitions in a Linux machine</title><link href="/recovering-corrupted-ntfs-partitions/" rel="alternate" type="text/html" title="Recovering corrupted NTFS partitions in a Linux machine" /><published>2018-08-14T05:12:18+00:00</published><updated>2018-08-14T05:12:18+00:00</updated><id>/recovering-corrupted-ntfs-partitions</id><content type="html" xml:base="/recovering-corrupted-ntfs-partitions/">&lt;h4 id=&quot;what-if-my-partition-is-not-showing-up-or-gone-missing&quot;&gt;What if my partition is not showing up or gone missing?&lt;/h4&gt;
+
+&lt;p&gt;In that case, TestDisk could help. It is a disk utility designed to help people recover their lost partitions.&lt;/p&gt;
+
+&lt;p&gt;To install it, here in my case on Debian, I’ll do&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sudo apt-get install testdisk
+$ testdisk
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;TestDisk has a QUICK SEARCH option which can search and list all your missing partitions if there’s any. Most probably your missing partitions should have appeared by now. If not, try running a DEEPER SEARCH. Once it found any, use the WRITE option of TestDisk which will re-write the partition table for you.&lt;/p&gt;
+
+&lt;p&gt;Restart your computer and your missing partitions should now show up.&lt;/p&gt;
+
+&lt;p&gt;I won’t go into detail. For a more thorough guide, follow the &lt;a href=&quot;testdisk-step-by-step&quot;&gt;Step By Step guide&lt;/a&gt; from the official Wiki.&lt;/p&gt;
+
+&lt;h4 id=&quot;how-to-fix-when-my-ntfs-goes-raw&quot;&gt;How to fix when my NTFS goes RAW?&lt;/h4&gt;
+
+&lt;p&gt;It’s better to use Windows utilities when it comes to dealing with NTFS.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Boot into a Windows Recovery Disk.&lt;/li&gt;
+  &lt;li&gt;Then go into ‘System Recovery Options’ menu.&lt;/li&gt;
+  &lt;li&gt;Open the command prompt window.&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Use one or more of the following commands to find out the label of your corrupted partition.&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; diskpart list disk
+ diskpart select disk
+ diskpart list volumes
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Once done exit from diskpart and run&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; chkdsk /f /r D:
+ where D: is the drive letter of the corrupted partition. 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;If you have got better solutions, let us know in the comment section.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">What if my partition is not showing up or gone missing?</summary></entry><entry><title type="html">Install Windows after Ubuntu/Linux</title><link href="/install-windows-after-linux/" rel="alternate" type="text/html" title="Install Windows after Ubuntu/Linux" /><published>2017-10-11T05:30:18+00:00</published><updated>2017-10-11T05:30:18+00:00</updated><id>/install-windows-after-linux</id><content type="html" xml:base="/install-windows-after-linux/">&lt;p&gt;As you know, the most common, and probably the most recommended way of dual booting Ubuntu and Windows is to install Windows first and then Ubuntu. But what if you want to install Windows second on a computer with Ubuntu/Linux already installed?&lt;/p&gt;
 
 &lt;p&gt;This guide assumes that you have Ubuntu already installed on your system, and will guide you through installing Windows 7/8/8.1/10 when you have a working Ubuntu/Linux partition.&lt;/p&gt;
 
