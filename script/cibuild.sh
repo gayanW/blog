@@ -20,7 +20,7 @@ git clone https://${GH_TOKEN}@github.com/linuxdevspace/blog.git --branch gh-page
 rm Gemfile.lock
 
 #  make sure all dependencies in the Gemfile are available 
-bundle install --deployment
+# bundle install --deployment
 
 # update all gems to the latest 
 if [ $BUNDLE_UPDATE == "true" ]; then
