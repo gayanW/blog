@@ -17,12 +17,10 @@ mkdir _site
 # clone remote repo to "_site"
 git clone https://${GH_TOKEN}@github.com/linuxdevspace/blog.git --branch gh-pages _site
 
-gem install bundler
-
-#  make sure all dependencies in the Gemfile are available 
+# make sure all dependencies in the Gemfile are available
 bundle install --no-deployment
 
-# update all gems to the latest 
+# update all gems to the latest
 if [ $BUNDLE_UPDATE == "true" ]; then
   bundle update
 fi
