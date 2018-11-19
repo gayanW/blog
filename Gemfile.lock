@@ -1,5 +1,5 @@
 GIT
-  remote: git://github.com/linuxdevspace/jekyll-theme-linuxdev.git
+  remote: git://github.com/gayanw/jekyll-theme-linuxdev.git
   revision: 0aeb8af26aad3e213572f63455e02f70678383f6
   branch: master
   specs:
