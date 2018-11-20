@@ -15,7 +15,7 @@ rm -rf _site
 mkdir _site
 
 # clone remote repo to "_site"
-git clone https://${GH_TOKEN}@github.com/linuxdevspace/blog.git --branch gh-pages _site
+git clone https://${GH_TOKEN}@github.com/gayanw/blog.git --branch gh-pages _site
 
 # make sure all dependencies in the Gemfile are available
 bundle install --no-deployment
