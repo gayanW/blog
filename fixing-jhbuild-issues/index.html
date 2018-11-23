@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    
+        <title>Fixing JHBuild Errors</title>
+    
+    <meta charset="utf-8">
+
+    <meta name="description" content="A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
+">
+
+    
+
+    <link rel="icon" href="/assets/img/blog.png">
+    <link href="https://fonts.googleapis.com/css?family=Alegreya|Roboto|Roboto+Mono" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/syntax/github.css">
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="header">
+			<h1><a href="/">Linux Developer Space</a></h1>
+			<ul>
+				
+				<li>
+					<a href="/">Home</a>
+				</li>
+				
+				<li>
+					<a href="/about">About</a>
+				</li>
+				
+			</ul>
+		</div>
+
+        <div class="post">
+
+  <div class="post__title">
+    <h1>Fixing JHBuild Errors</h1>
+  </div>
+  <div class="post__date">
+    <p>August 14, 2018</p>
+  </div>
+  <div class="post__meta">
+    <p></p>
+  </div>
+  <div class="post__content">
+    <p><strong>Fixing no native package found errors</strong></p>
+
+<p>JHBuild uses apt-file to locate packages in which a given file belongs to.</p>
+
+<p>When apt-file cannot locate the relevant packages for you, JHBuild would give you with informational warnings such as:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>I: Installing dependencies on system: libsystemd-journal libtiff
+I: Using apt-file to search for providers; this may be slow. Please wait.
+I: No native package found for libsystemd-journal (/libsystemd-journal.pc)
+I: No native package found for libtiff (/usr/include/tiff.h)
+</code></pre></div></div>
+
+<p>In such cases, first make sure that your apt-file database is up-to-date.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo apt-file update
+</code></pre></div></div>
+
+<p>Then re-run the process. JHBuild might still fails to complete the process. This could be due to several reasons. So for instance if apt-file finds several packages which includes the same file, JHBuild would fail to decide on which package to install. In that case we’d have to find the most appropriate pacakge and install it manaully. Also the actual package name can be sligtly different from the name stated in the warning.</p>
+
+<p>To find the relevant package which includes the given file, you could run:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt-file search path/to/missing.file
+</code></pre></div></div>
+
+<p>You could also use Ubuntu’s package archive search on web, instead of apt-file. But apt-file usually is more convenient.</p>
+
+<ol>
+  <li>Go to packages.ubuntu.com</li>
+  <li>Search the contents of packages which include the missing file.</li>
+  <li>Find the relevant package for your distribution and install it.</li>
+</ol>
+
+<p>For example here the missing libsystemd.pc belongs to the package named ‘libsystemd-dev’</p>
+
+<p>Therefore running <code class="highlighter-rouge">apt-get install libsystemd-dev</code> should fix it.</p>
+
+<p><strong>Fixing No matching system package installed</strong></p>
+
+<p>This type of errors can be quite tricky as your distribution might not have a package that is newer than the required version.</p>
+
+<p>Example cases:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>libsystemd-journal (libsystemd-journal.pc, required=201)
+</code></pre></div></div>
+
+<p>Ubuntu’s Launchpad provides compatibility package for libsystemd-journal-dev (&gt;201) which includes the required .pc file. Downloading and installing latest binary .deb file for your distribution should fix it.</p>
+
+<p><strong>Fixing configure errors: Package requirements (package-name) were not met</strong></p>
+
+<p>In that case do,</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt-cache search package-name
+</code></pre></div></div>
+
+<p>This will list down all the packages for the given keyword: package-name</p>
+
+<p>Find the required development package from the list and install it.
+On a Debian based system the package name would probably contain a *-dev suffix. For Fedora, look for ‘-devel’</p>
+
+<p>For example to fix <em>“configure: error: Package requirements (libselinux &gt;= 2.0) were not met”</em></p>
+
+<p>Run the following in a terminal</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt-cache search libselinux
+</code></pre></div></div>
+
+<p>On my system the output is,</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>libselinux1 - SELinux runtime shared libraries
+libselinux1-dev - SELinux development headers
+libsemanage1 - SELinux policy management library
+</code></pre></div></div>
+
+<p>So installing ‘libselinux1-dev’ should fix the configure error.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apt-get install libselinux1-dev
+</code></pre></div></div>
+
+    <script type="text/javascript"> var infolinks_pid = 3145238; var infolinks_wsid = 0; </script>
+<script type="text/javascript" src="//resources.infolinks.com/js/infolinks_main.js"></script>
+
+  </div>
+
+</div>
+
+
+	<div class="footer">
+		<p>&copy; 2018 <a href="/">Gayan Weerakutti</a>, unless otherwise noted.</p>
+	</div>
+	</div>
+</body>
+
+</html>
