@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    
+        <title>Install Unity3D on Linux</title>
+    
+    <meta charset="utf-8">
+
+    <meta name="description" content="A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
+">
+
+    
+
+    <link rel="icon" href="/assets/img/blog.png">
+    <link href="https://fonts.googleapis.com/css?family=Alegreya|Roboto|Roboto+Mono" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/syntax/github.css">
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="header">
+			<h1><a href="/">Linux Developer Space</a></h1>
+			<ul>
+				
+				<li>
+					<a href="/">Home</a>
+				</li>
+				
+				<li>
+					<a href="/about">About</a>
+				</li>
+				
+			</ul>
+		</div>
+
+        <div class="post">
+
+  <div class="post__title">
+    <h1>Install Unity3D on Linux</h1>
+  </div>
+  <div class="post__date">
+    <p>January 6, 2019</p>
+  </div>
+  <div class="post__meta">
+    <p></p>
+  </div>
+  <div class="post__content">
+    <p>I’ve been running Unity on my Debian machine, and I’m pretty amazed by how well everything works, 
+though it is not listed as an officially supported distro. 
+It should also work for any other distro, Ubuntu, Fedora and the like.</p>
+
+<p>The preferred way of installing Unity on Linux is by first installing Unity Hub.</p>
+
+<h4 id="install--run-unity-hub-on-linux">Install &amp; Run Unity Hub on Linux</h4>
+
+<p>You can find the Unity Hub setup file in here:</p>
+
+<p>https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.AppImage</p>
+
+<p>You can also refer to <a href="https://forum.unity.com/forums/unity-hub.142/">Unity Hub sub-forum</a> in forum.unity.com to make sure that you’re downloading the latest available version.</p>
+
+<p>Once downloaded, you may need to give execute permission to the UnityHubSetup.AppImage</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> /path/to/download/dir
+<span class="nb">sudo </span>chmod +x UnityHubSetup.AppImage
+</code></pre></div></div>
+
+<p>Then run the setup file. Either run it from the terminal or just open the file from a file manager.</p>
+
+<h4 id="install-unity-from-unity-hub">Install Unity from Unity Hub</h4>
+
+<p><a href="/assets/unity/running-unity-hub.gif" target="_blank">
+<img src="/assets/unity/running-unity-hub.gif" alt="Running Unity Hub" width="100%" />
+</a></p>
+
+<p>In the Installs section of Unity Hub application, you can choose a preferred version of Unity that you want to
+install. Unity Hub will automatically download and install it for you. Unity Hub also helps us to easily switch between different versions of Unity.</p>
+
+<h4 id="unity-crash">Unity Crash</h4>
+
+<p>If your Unity crashes, most probably your graphics driver is to blame.</p>
+
+<p>If you have an Intel graphic card that is 2007 or newer, try uninstalling xserver-xorg-video-intel
+Your system will then default to use the builtin modesetting driver instead.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dpkg <span class="nt">-l</span> xserver-xorg-video-intel
+<span class="nb">sudo </span>apt-get purge xserver-xorg-video-intel
+</code></pre></div></div>
+
+<p>If that still not fix your issue, try asking in the forums.</p>
+
+<p>If it’s not a known issue, you could also send a bug report, which will open an issue in <a href="https://issuetracker.unity3d.com/">Issue Tracker</a> and Unity team will get back to you.</p>
+
+  </div>
+
+</div>
+
+
+	<div class="footer">
+		<p>&copy; 2019 <a href="/">Gayan Weerakutti</a>, unless otherwise noted.</p>
+	</div>
+	</div>
+</body>
+
+</html>

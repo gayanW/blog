@@ -1,5 +1,49 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.4">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2019-01-06T11:34:38+00:00</updated><id>/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
-</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Recovering corrupted NTFS partitions in a Linux machine</title><link href="/recovering-corrupted-ntfs-partitions/" rel="alternate" type="text/html" title="Recovering corrupted NTFS partitions in a Linux machine" /><published>2018-08-14T05:12:18+00:00</published><updated>2018-08-14T05:12:18+00:00</updated><id>/recovering-corrupted-ntfs-partitions</id><content type="html" xml:base="/recovering-corrupted-ntfs-partitions/">&lt;h4 id=&quot;what-if-my-partition-is-not-showing-up-or-gone-missing&quot;&gt;What if my partition is not showing up or gone missing?&lt;/h4&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.4">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2019-01-06T17:46:49+00:00</updated><id>/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
+</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Install Unity3D on Linux</title><link href="/install-unity-linux/" rel="alternate" type="text/html" title="Install Unity3D on Linux" /><published>2019-01-06T17:02:23+00:00</published><updated>2019-01-06T17:02:23+00:00</updated><id>/install-unity-linux</id><content type="html" xml:base="/install-unity-linux/">&lt;p&gt;I’ve been running Unity on my Debian machine, and I’m pretty amazed by how well everything works, 
+though it is not listed as an officially supported distro. 
+It should also work for any other distro, Ubuntu, Fedora and the like.&lt;/p&gt;
+
+&lt;p&gt;The preferred way of installing Unity on Linux is by first installing Unity Hub.&lt;/p&gt;
+
+&lt;h4 id=&quot;install--run-unity-hub-on-linux&quot;&gt;Install &amp;amp; Run Unity Hub on Linux&lt;/h4&gt;
+
+&lt;p&gt;You can find the Unity Hub setup file in here:&lt;/p&gt;
+
+&lt;p&gt;https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.AppImage&lt;/p&gt;
+
+&lt;p&gt;You can also refer to &lt;a href=&quot;https://forum.unity.com/forums/unity-hub.142/&quot;&gt;Unity Hub sub-forum&lt;/a&gt; in forum.unity.com to make sure that you’re downloading the latest available version.&lt;/p&gt;
+
+&lt;p&gt;Once downloaded, you may need to give execute permission to the UnityHubSetup.AppImage&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; /path/to/download/dir
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;chmod +x UnityHubSetup.AppImage
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Then run the setup file. Either run it from the terminal or just open the file from a file manager.&lt;/p&gt;
+
+&lt;h4 id=&quot;install-unity-from-unity-hub&quot;&gt;Install Unity from Unity Hub&lt;/h4&gt;
+
+&lt;p&gt;&lt;a href=&quot;/assets/unity/running-unity-hub.gif&quot; target=&quot;_blank&quot;&gt;
+&lt;img src=&quot;/assets/unity/running-unity-hub.gif&quot; alt=&quot;Running Unity Hub&quot; width=&quot;100%&quot; /&gt;
+&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;In the Installs section of Unity Hub application, you can choose a preferred version of Unity that you want to
+install. Unity Hub will automatically download and install it for you. Unity Hub also helps us to easily switch between different versions of Unity.&lt;/p&gt;
+
+&lt;h4 id=&quot;unity-crash&quot;&gt;Unity Crash&lt;/h4&gt;
+
+&lt;p&gt;If your Unity crashes, most probably your graphics driver is to blame.&lt;/p&gt;
+
+&lt;p&gt;If you have an Intel graphic card that is 2007 or newer, try uninstalling xserver-xorg-video-intel
+Your system will then default to use the builtin modesetting driver instead.&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dpkg &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; xserver-xorg-video-intel
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-get purge xserver-xorg-video-intel
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If that still not fix your issue, try asking in the forums.&lt;/p&gt;
+
+&lt;p&gt;If it’s not a known issue, you could also send a bug report, which will open an issue in &lt;a href=&quot;https://issuetracker.unity3d.com/&quot;&gt;Issue Tracker&lt;/a&gt; and Unity team will get back to you.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">I’ve been running Unity on my Debian machine, and I’m pretty amazed by how well everything works, though it is not listed as an officially supported distro. It should also work for any other distro, Ubuntu, Fedora and the like.</summary></entry><entry><title type="html">Recovering corrupted NTFS partitions in a Linux machine</title><link href="/recovering-corrupted-ntfs-partitions/" rel="alternate" type="text/html" title="Recovering corrupted NTFS partitions in a Linux machine" /><published>2018-08-14T05:12:18+00:00</published><updated>2018-08-14T05:12:18+00:00</updated><id>/recovering-corrupted-ntfs-partitions</id><content type="html" xml:base="/recovering-corrupted-ntfs-partitions/">&lt;h4 id=&quot;what-if-my-partition-is-not-showing-up-or-gone-missing&quot;&gt;What if my partition is not showing up or gone missing?&lt;/h4&gt;
 
 &lt;p&gt;In that case, TestDisk could help. It is a disk utility designed to help people recover their lost partitions.&lt;/p&gt;
 
