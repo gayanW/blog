@@ -3420,4 +3420,9 @@ ul#zx-origins-index .title {
   cursor: pointer;
 }
 
+/* added by gayanw */
+#commentbutton {
+  display: block;
+  margin-top: 12px;
+}
 
