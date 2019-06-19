@@ -1,0 +1,5 @@
+_id: cb0ca050-92e1-11e9-8148-853cd70eaeee
+message: "Just wanted to give you a heads up. I recently followed your guide for repairing Grub after installing windows but wanted to let you know I had to deviate due to a typo I noticed. I worried someone else might make a catastrophic mistake if they didn't notice so I'm letting you know.\r\n\r\nIn the section about Reinstalling Grub in an EFI based system, the example under \"Mount EFI partition under ‘/mnt/boot/efi’\" says to mount /dev/sda2, when I believe it should actually be /dev/sda1, according to your system layout shown earlier.\r\n\r\nIt's possible I'm wrong, I'm not extremely well versed, but changing it worked for me and it looks like following the guide to the tee would result in installing Grub in the wrong partition."
+name: Kane
+email: de897adfa689ee5e337b0f66b0f9e0a2
+date: 1560983408
