@@ -58,7 +58,6 @@ hr { border: 0; border-bottom: 1px solid #999; }
 .post__title { display: block; margin-top: 20px; margin-bottom: 6px; }
 .post__title h1 { display: inline-block; font-size: 1.6em; font-weight: 700; padding-right: 10px; padding-bottom: 2px; text-decoration: none; }
 .post__date p { font-size: 1em; font-style: italic; margin-bottom: 3px; }
-.post__content { padding-top: 30px; }
 .post__content h1 { font-size: 1.4em; font-weight: 700; margin-top: 50px; margin-bottom: 10px; }
 .post__content h2 { font-size: 1.2em; font-weight: 700; margin-top: 25px; margin-bottom: 8px; }
 .post__content h3 { font-size: 1.1em; font-weight: 600; margin-top: 20px; margin-bottom: 7px; }
@@ -79,7 +78,7 @@ hr { border: 0; border-bottom: 1px solid #999; }
 .post__content img { margin-top: 10px; margin-bottom: 10px; }
 @media screen and (max-width: 600px) { .post__content img { width: 100%; margin: auto; } }
 .post__content code { font-size: 0.8em; background: #EEEEEE; }
-.post__content .highlight { margin: 10px; margin-bottom: 15px; padding: 10px; line-height: 1.5; border-radius: 3px; background: #6f7a7b; }
+.post__content .highlight { line-height: 1.5; border-radius: 3px; }
 .post__content .highlight code { color: #FFFFFF; background: none; }
 .post__content .codebreak { margin: 15px; border: 0; border-bottom: 1px dashed #272727; }
 

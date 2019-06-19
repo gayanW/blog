@@ -15,6 +15,7 @@
     <link rel="icon" href="/assets/img/blog.png">
     <link href="https://fonts.googleapis.com/css?family=Alegreya|Roboto|Roboto+Mono" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/damieng.css">
     <link rel="stylesheet" type="text/css" href="/assets/css/syntax/github.css">
 </head>
 
@@ -94,6 +95,69 @@ Your system will then default to use the builtin modesetting driver instead.</p>
 <p>If it’s not a known issue, you could also send a bug report, which will open an issue in <a href="https://issuetracker.unity3d.com/">Issue Tracker</a> and Unity team will get back to you.</p>
 
   </div>
+
+  
+
+
+
+
+
+
+
+<h3>Leave a comment</h3>
+<form action="/fake" method="post" id="commentform" class="form-horizontal">
+  <fieldset id="commentfields">
+    <input name="redirect" type="hidden" value="/thanks">
+    <input name="post_id" type="hidden" value="install-unity-linux">
+    <input name="comment-site" type="hidden" value="">
+    <textarea name="message" id="message" placeholder="Continue the discussion."></textarea>
+
+    <label for="name">Name/alias <span>(Required, displayed)</span></label>
+    <input type="text" name="name" id="name" placeholder="Name" />
+
+    <label for="email">Email <span>(Required, not shown)</span></label>
+    <input type="text" name="email" id="email" placeholder="you@domain.com" />
+
+    <!-- commented by gayanW
+    <label for="url">Website <span>(Optional, displayed)</span></label>
+    <input type="text" name="url" id="url" placeholder="https://mywebsite.com" />
+    -->
+    <br>
+
+    <button onclick="setupForm()" type="button" class="btn btn-primary" id="commentbutton">Leave response</button>
+  </fieldset>
+</form>
+<script>
+    function setupForm() {
+      var status = document.getElementById('commentstatus')
+      status.innerText = ''
+
+      var requiredIds = [ 'message', 'email', 'name']
+      var missing = requiredIds.filter(id => document.getElementById(id).value.length < 3)
+      if (missing.length > 0) {
+        status.innerText = 'Some required fields are missing - (' + missing.join(', ') + ')'
+        return
+      }
+
+      var button = document.getElementById('commentbutton')
+      if (button.innerText != 'Confirm comment') {
+        button.innerText = 'Confirm comment'
+        return
+      }
+
+      var form = document.getElementById('commentform')
+      form.action = 'https://api.staticman.net/v3/entry/github/gayanw/blog/master/comments'
+      button.innerText = 'Posting...'
+      button.disabled = true
+      form.submit()
+      var fields = document.getElementById('commentfields')                                         
+      fields.disabled = true
+    }
+  </script>
+<div id="commentstatus" style="clear:both" class="status"></div>
+
+
+
 
 </div>
 
