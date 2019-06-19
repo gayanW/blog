@@ -40,7 +40,7 @@ install. Unity Hub will automatically download and install it for you. Unity Hub
 
 If your Unity crashes, most probably your graphics driver is to blame.
 
-If you have an Intel graphic card that is 2007 or newer, try uninstalling xserver-xorg-video-intel
+If you have an Intel graphic card that is 2007 or newer, try uninstalling `xserver-xorg-video-intel`.
 Your system will then default to use the builtin modesetting driver instead. 
 
 ~~~ bash
