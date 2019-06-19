@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2019-06-19T13:12:46+00:00</updated><id>/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2019-06-19T14:04:41+00:00</updated><id>/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
 </subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Install Unity3D on Linux</title><link href="/install-unity-linux/" rel="alternate" type="text/html" title="Install Unity3D on Linux" /><published>2019-01-06T17:02:23+00:00</published><updated>2019-01-06T17:02:23+00:00</updated><id>/install-unity-linux</id><content type="html" xml:base="/install-unity-linux/">&lt;p&gt;I’ve been running Unity on my Debian machine, and I’m pretty amazed by how well everything works, 
 though it is not listed as an officially supported distro. 
 It should also work for any other distro, Ubuntu, Fedora and the like.&lt;/p&gt;
@@ -34,7 +34,7 @@ install. Unity Hub will automatically download and install it for you. Unity Hub
 
 &lt;p&gt;If your Unity crashes, most probably your graphics driver is to blame.&lt;/p&gt;
 
-&lt;p&gt;If you have an Intel graphic card that is 2007 or newer, try uninstalling xserver-xorg-video-intel
+&lt;p&gt;If you have an Intel graphic card that is 2007 or newer, try uninstalling &lt;code class=&quot;highlighter-rouge&quot;&gt;xserver-xorg-video-intel&lt;/code&gt;.
 Your system will then default to use the builtin modesetting driver instead.&lt;/p&gt;
 
 &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dpkg &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; xserver-xorg-video-intel
