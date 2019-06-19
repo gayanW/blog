@@ -19,7 +19,7 @@ description: > # this means to ignore newlines until "baseurl:"
   A free colloborative space for Linux developers to share their tuts and tips on 
   Linux and Open Source.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://www.linuxdeveloper.space" # the base hostname & protocol for your site, e.g. http://example.com
 permalink: /:title/
 twitter_username: jekyllrb
 github_username:  jekyll
