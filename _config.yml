@@ -56,7 +56,7 @@ emptyArray: []
 
 comments:
   enabled: true
-  receiver: https://api.staticman.net/v3/entry/github/gayanw/blog/master/comments
+  receiver: https://dev.staticman.net/v3/entry/github/gayanw/blog/master/comments
 
 defaults:
   -
