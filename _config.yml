@@ -48,3 +48,21 @@ post_order: reversed
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
+
+# Configure damieng/jekyll-blog-comments
+# https://github.com/damieng/jekyll-blog-comments
+# Blog that uses jekyll-blog-comments: https://haacked.com
+emptyArray: []
+
+comments:
+  enabled: true
+  receiver: https://api.staticman.net/v3/entry/github/gayanw/blog/master/comments
+
+defaults:
+  -
+    scope:
+      path: "" # an empty string here means all files in the project
+      type: "posts" # previously `post` in Jekyll 2.2.
+    values:
+      layout: "post"
+      commenting: open
