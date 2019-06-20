@@ -8,13 +8,13 @@ As you know, the most common, and probably the most recommended way of dual boot
 
 This guide assumes that you have Ubuntu already installed on your system, and will guide you through installing Windows 7/8/8.1/10 when you have a working Ubuntu/Linux partition.
 
-The problem here is that the Windows installer tends to overwrite Grub bootloader or whatever making only the Windows installation bootable. But the good news is that your Linux partition is untouched, including the original bootloader and the other Grub configurations. So restoring or recovering the Grub is just a matter of running a few commands on the terminal.
+The problem here is that the Windows installer tends to overwrite Grub bootloader or whatever making only the Windows installation bootable. But the good news is that your Linux partition is untouched, including the original bootloader and the other Grub configurations. So restoring or recovering Grub is just a matter of running a few commands on the terminal.
 
 #### Install Windows on a Separate Partition
 
 If your Ubuntu installation occupies the entire hard drive, to be able to create free space for the Windows installation, you may have to shrink an existing partition using a disk utility like GParted. GParted comes preinstalled on Ubuntu LiveCD.
 
-#### Boot into a Windows installation media and complete with the installation
+#### Boot into a Windows installation media and complete the installation
 
 Once installed, because of Microsoft’s false assumption that there are no non-Microsoft operating systems you’ll be taken straight into Windows.
 
@@ -22,7 +22,7 @@ Once installed, because of Microsoft’s false assumption that there are no non-
 
 1. Now boot into a Ubuntu Live/USB or CD.
 2. Open a terminal. (Ctrl + Alt + t)
-3. Use lsblk, blkid commands or GParted to identify your Linux root, and boot partitions. You may or may not have a separate boot partition.
+3. Use a command like lsblk, blkid or GParted to identify your Linux root, and boot partitions. You may or may not have a separate boot partition.
 4. Find Linux Partitions
 
 	~~~
@@ -69,7 +69,7 @@ Once installed, because of Microsoft’s false assumption that there are no non-
 
 	If you have an EFI partition you should mount that also. It is basically a small FAT32 partition around 100mb. Please refer to the section on how to [reinstall Grub in an EFI system](#reinstalling-grub-in-an-efi-based-system).
 
-	Bind the directories, so grub can detect other operating systems, like so. 
+	Bind these directories, so grub can detect other operating systems, like so. 
 
 	~~~ bash
 	sudo mount --bind /dev /mnt/dev
@@ -86,7 +86,7 @@ Once installed, because of Microsoft’s false assumption that there are no non-
 
 	~~~ bash
 	grub-install /dev/sda (specify the disk `/dev/sdX`, not `/dev/sdaX`)
-	grub-install --recheck /dev/sdX
+	grub-install --recheck /dev/sda
 	exit
 	~~~
 
@@ -94,9 +94,9 @@ Once installed, because of Microsoft’s false assumption that there are no non-
 
 #### Reinstalling Grub in an EFI Based System
 
-Reinstalling Grub bootloader in a UEFI based computer is no different from installing Grub on a legacy Bios system. Here we also mount the EFI partition before chrooting, as we’d do with the boot partition.
+Reinstalling Grub bootloader in a UEFI based computer is no different from installing Grub on a legacy BIOS system. Here we also mount the EFI partition before chrooting, as we’d do with the boot partition.
 
-Case #2
+##### Case #2
 
 ~~~
 $ lsblk -f
@@ -110,8 +110,6 @@ sda
 Here `/dev/sda1` is the EFI partition and `/dev/sda2` is the root.
 
     sudo mount /dev/sda2 /mnt/
-    ( For BTRFS: sudo mount -t btrfs -o subvol=@ /dev/sda5 /mnt/ )
-
 
 Mount EFI partition under ‘/mnt/boot/efi’
 
