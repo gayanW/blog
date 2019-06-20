@@ -115,7 +115,7 @@ Here `/dev/sda1` is the EFI partition and `/dev/sda2` is the root.
 
 Mount EFI partition under ‘/mnt/boot/efi’
 
-    sudo mount /dev/sda2 /mnt/boot/efi
+    sudo mount /dev/sda1 /mnt/boot/efi
 
 > Forgetting to do so will result in errors being thrown while trying to execute grub-install: “/boot/efi does not appear to be the EFI partition”
 
