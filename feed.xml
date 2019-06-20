@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2019-06-20T08:11:19+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2019-06-20T08:26:15+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
 </subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Install Unity3D on Linux</title><link href="https://www.linuxdeveloper.space/install-unity-linux/" rel="alternate" type="text/html" title="Install Unity3D on Linux" /><published>2019-01-06T17:02:23+00:00</published><updated>2019-01-06T17:02:23+00:00</updated><id>https://www.linuxdeveloper.space/install-unity-linux</id><content type="html" xml:base="https://www.linuxdeveloper.space/install-unity-linux/">&lt;p&gt;I’ve been running Unity on my Debian machine, and I’m pretty amazed by how well everything works, 
 though it is not listed as an officially supported distro. 
 It should also work for any other distro, Ubuntu, Fedora and the like.&lt;/p&gt;
@@ -164,13 +164,13 @@ libsemanage1 - SELinux policy management library
 
 &lt;p&gt;This guide assumes that you have Ubuntu already installed on your system, and will guide you through installing Windows 7/8/8.1/10 when you have a working Ubuntu/Linux partition.&lt;/p&gt;
 
-&lt;p&gt;The problem here is that the Windows installer tends to overwrite Grub bootloader or whatever making only the Windows installation bootable. But the good news is that your Linux partition is untouched, including the original bootloader and the other Grub configurations. So restoring or recovering the Grub is just a matter of running a few commands on the terminal.&lt;/p&gt;
+&lt;p&gt;The problem here is that the Windows installer tends to overwrite Grub bootloader or whatever making only the Windows installation bootable. But the good news is that your Linux partition is untouched, including the original bootloader and the other Grub configurations. So restoring or recovering Grub is just a matter of running a few commands on the terminal.&lt;/p&gt;
 
 &lt;h4 id=&quot;install-windows-on-a-separate-partition&quot;&gt;Install Windows on a Separate Partition&lt;/h4&gt;
 
 &lt;p&gt;If your Ubuntu installation occupies the entire hard drive, to be able to create free space for the Windows installation, you may have to shrink an existing partition using a disk utility like GParted. GParted comes preinstalled on Ubuntu LiveCD.&lt;/p&gt;
 
-&lt;h4 id=&quot;boot-into-a-windows-installation-media-and-complete-with-the-installation&quot;&gt;Boot into a Windows installation media and complete with the installation&lt;/h4&gt;
+&lt;h4 id=&quot;boot-into-a-windows-installation-media-and-complete-the-installation&quot;&gt;Boot into a Windows installation media and complete the installation&lt;/h4&gt;
 
 &lt;p&gt;Once installed, because of Microsoft’s false assumption that there are no non-Microsoft operating systems you’ll be taken straight into Windows.&lt;/p&gt;
 
@@ -179,7 +179,7 @@ libsemanage1 - SELinux policy management library
 &lt;ol&gt;
   &lt;li&gt;Now boot into a Ubuntu Live/USB or CD.&lt;/li&gt;
   &lt;li&gt;Open a terminal. (Ctrl + Alt + t)&lt;/li&gt;
-  &lt;li&gt;Use lsblk, blkid commands or GParted to identify your Linux root, and boot partitions. You may or may not have a separate boot partition.&lt;/li&gt;
+  &lt;li&gt;Use a command like lsblk, blkid or GParted to identify your Linux root, and boot partitions. You may or may not have a separate boot partition.&lt;/li&gt;
   &lt;li&gt;
     &lt;p&gt;Find Linux Partitions&lt;/p&gt;
 
@@ -228,7 +228,7 @@ sudo mount -t btrfs -o subvol=@ /dev/sda2 /mnt/&lt;/p&gt;
 
     &lt;p&gt;If you have an EFI partition you should mount that also. It is basically a small FAT32 partition around 100mb. Please refer to the section on how to &lt;a href=&quot;#reinstalling-grub-in-an-efi-based-system&quot;&gt;reinstall Grub in an EFI system&lt;/a&gt;.&lt;/p&gt;
 
-    &lt;p&gt;Bind the directories, so grub can detect other operating systems, like so.&lt;/p&gt;
+    &lt;p&gt;Bind these directories, so grub can detect other operating systems, like so.&lt;/p&gt;
 
     &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;mount &lt;span class=&quot;nt&quot;&gt;--bind&lt;/span&gt; /dev /mnt/dev
  &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;mount &lt;span class=&quot;nt&quot;&gt;--bind&lt;/span&gt; /dev/pts /mnt/dev/pts
@@ -245,7 +245,7 @@ sudo mount -t btrfs -o subvol=@ /dev/sda2 /mnt/&lt;/p&gt;
     &lt;p&gt;Reinstall Grub.&lt;/p&gt;
 
     &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; grub-install /dev/sda &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;specify the disk &lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;/dev/sdX&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;, not &lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;/dev/sdaX&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
- grub-install &lt;span class=&quot;nt&quot;&gt;--recheck&lt;/span&gt; /dev/sdX
+ grub-install &lt;span class=&quot;nt&quot;&gt;--recheck&lt;/span&gt; /dev/sda
  &lt;span class=&quot;nb&quot;&gt;exit&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
 
@@ -255,9 +255,9 @@ sudo mount -t btrfs -o subvol=@ /dev/sda2 /mnt/&lt;/p&gt;
 
 &lt;h4 id=&quot;reinstalling-grub-in-an-efi-based-system&quot;&gt;Reinstalling Grub in an EFI Based System&lt;/h4&gt;
 
-&lt;p&gt;Reinstalling Grub bootloader in a UEFI based computer is no different from installing Grub on a legacy Bios system. Here we also mount the EFI partition before chrooting, as we’d do with the boot partition.&lt;/p&gt;
+&lt;p&gt;Reinstalling Grub bootloader in a UEFI based computer is no different from installing Grub on a legacy BIOS system. Here we also mount the EFI partition before chrooting, as we’d do with the boot partition.&lt;/p&gt;
 
-&lt;p&gt;Case #2&lt;/p&gt;
+&lt;h5 id=&quot;case-2&quot;&gt;Case #2&lt;/h5&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ lsblk -f
 NAME                  FSTYPE     MOUNTPOINT
@@ -270,7 +270,6 @@ sda
 &lt;p&gt;Here &lt;code class=&quot;highlighter-rouge&quot;&gt;/dev/sda1&lt;/code&gt; is the EFI partition and &lt;code class=&quot;highlighter-rouge&quot;&gt;/dev/sda2&lt;/code&gt; is the root.&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo mount /dev/sda2 /mnt/
-( For BTRFS: sudo mount -t btrfs -o subvol=@ /dev/sda5 /mnt/ )
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Mount EFI partition under ‘/mnt/boot/efi’&lt;/p&gt;

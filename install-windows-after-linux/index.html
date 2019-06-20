@@ -52,13 +52,13 @@
 
 <p>This guide assumes that you have Ubuntu already installed on your system, and will guide you through installing Windows 7/8/8.1/10 when you have a working Ubuntu/Linux partition.</p>
 
-<p>The problem here is that the Windows installer tends to overwrite Grub bootloader or whatever making only the Windows installation bootable. But the good news is that your Linux partition is untouched, including the original bootloader and the other Grub configurations. So restoring or recovering the Grub is just a matter of running a few commands on the terminal.</p>
+<p>The problem here is that the Windows installer tends to overwrite Grub bootloader or whatever making only the Windows installation bootable. But the good news is that your Linux partition is untouched, including the original bootloader and the other Grub configurations. So restoring or recovering Grub is just a matter of running a few commands on the terminal.</p>
 
 <h4 id="install-windows-on-a-separate-partition">Install Windows on a Separate Partition</h4>
 
 <p>If your Ubuntu installation occupies the entire hard drive, to be able to create free space for the Windows installation, you may have to shrink an existing partition using a disk utility like GParted. GParted comes preinstalled on Ubuntu LiveCD.</p>
 
-<h4 id="boot-into-a-windows-installation-media-and-complete-with-the-installation">Boot into a Windows installation media and complete with the installation</h4>
+<h4 id="boot-into-a-windows-installation-media-and-complete-the-installation">Boot into a Windows installation media and complete the installation</h4>
 
 <p>Once installed, because of Microsoft’s false assumption that there are no non-Microsoft operating systems you’ll be taken straight into Windows.</p>
 
@@ -67,7 +67,7 @@
 <ol>
   <li>Now boot into a Ubuntu Live/USB or CD.</li>
   <li>Open a terminal. (Ctrl + Alt + t)</li>
-  <li>Use lsblk, blkid commands or GParted to identify your Linux root, and boot partitions. You may or may not have a separate boot partition.</li>
+  <li>Use a command like lsblk, blkid or GParted to identify your Linux root, and boot partitions. You may or may not have a separate boot partition.</li>
   <li>
     <p>Find Linux Partitions</p>
 
@@ -116,7 +116,7 @@ sudo mount -t btrfs -o subvol=@ /dev/sda2 /mnt/</p>
 
     <p>If you have an EFI partition you should mount that also. It is basically a small FAT32 partition around 100mb. Please refer to the section on how to <a href="#reinstalling-grub-in-an-efi-based-system">reinstall Grub in an EFI system</a>.</p>
 
-    <p>Bind the directories, so grub can detect other operating systems, like so.</p>
+    <p>Bind these directories, so grub can detect other operating systems, like so.</p>
 
     <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nb">sudo </span>mount <span class="nt">--bind</span> /dev /mnt/dev
  <span class="nb">sudo </span>mount <span class="nt">--bind</span> /dev/pts /mnt/dev/pts
@@ -133,7 +133,7 @@ sudo mount -t btrfs -o subvol=@ /dev/sda2 /mnt/</p>
     <p>Reinstall Grub.</p>
 
     <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> grub-install /dev/sda <span class="o">(</span>specify the disk <span class="sb">`</span>/dev/sdX<span class="sb">`</span>, not <span class="sb">`</span>/dev/sdaX<span class="sb">`</span><span class="o">)</span>
- grub-install <span class="nt">--recheck</span> /dev/sdX
+ grub-install <span class="nt">--recheck</span> /dev/sda
  <span class="nb">exit</span>
 </code></pre></div>    </div>
 
@@ -143,9 +143,9 @@ sudo mount -t btrfs -o subvol=@ /dev/sda2 /mnt/</p>
 
 <h4 id="reinstalling-grub-in-an-efi-based-system">Reinstalling Grub in an EFI Based System</h4>
 
-<p>Reinstalling Grub bootloader in a UEFI based computer is no different from installing Grub on a legacy Bios system. Here we also mount the EFI partition before chrooting, as we’d do with the boot partition.</p>
+<p>Reinstalling Grub bootloader in a UEFI based computer is no different from installing Grub on a legacy BIOS system. Here we also mount the EFI partition before chrooting, as we’d do with the boot partition.</p>
 
-<p>Case #2</p>
+<h5 id="case-2">Case #2</h5>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ lsblk -f
 NAME                  FSTYPE     MOUNTPOINT
@@ -158,7 +158,6 @@ sda
 <p>Here <code class="highlighter-rouge">/dev/sda1</code> is the EFI partition and <code class="highlighter-rouge">/dev/sda2</code> is the root.</p>
 
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo mount /dev/sda2 /mnt/
-( For BTRFS: sudo mount -t btrfs -o subvol=@ /dev/sda5 /mnt/ )
 </code></pre></div></div>
 
 <p>Mount EFI partition under ‘/mnt/boot/efi’</p>
