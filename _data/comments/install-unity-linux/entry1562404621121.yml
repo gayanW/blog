@@ -1,0 +1,5 @@
+_id: cfacabb0-9fce-11e9-bb8d-676f6a840b4e
+message: "When i enter \"/home/guest/Unity/Hub/Editor/2019.3.0a8/Editor/Unity\" on the terminal, a message box appears: \r\n\"We recommend installing the Unity Hub for the best Unity experience. Visit http://unity3d.com/get-unity/download - Continue launching Unity - [Open project] [Create empty project] [Quit]\" - So, how can we run Unity Hub directly from command line? Or do i have to run UnityHubSetup.AppImage all the time i'm going to run Unity Hub?"
+name: nitrofurano
+email: 22e8bb086e7dac76e67110ef934a7ae2
+date: 1562404621
