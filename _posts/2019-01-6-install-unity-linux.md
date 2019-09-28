@@ -14,7 +14,7 @@ The preferred way of installing Unity on Linux is by first installing Unity Hub.
 
 You can find the Unity Hub setup file in here:
 
-https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.AppImage
+https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage
 
 You can also refer to [Unity Hub sub-forum](https://forum.unity.com/forums/unity-hub.142/) in forum.unity.com to make sure that you're downloading the latest available version.
 
