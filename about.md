@@ -5,9 +5,9 @@ permalink: /about/
 ---
 
 This site includes no bullshit guides to Linux, Open Source, and programming in general.
-If you feel like writing for this blog, feel free to send a PR to [linuxdevspace](linuxdevspace) / [blog](linuxdevspace-blog) or email me at gayan@linuxdeveloper.space
+If you feel like writing for this blog, feel free to send a PR to [gayanW] / [blog] or email me at gayan@linuxdeveloper.space
 
 Fear not, this blog will flourish; I promise.
 
-[linuxdevspace]: https://github.com/linuxdevspace
-[linuxdevspace-blog]: https://github.com/linuxdevspace/blog
+[gayanW]: <https://github.com/gayanW>
+[blog]: <https://github.com/gayanW/blog>
