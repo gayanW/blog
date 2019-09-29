@@ -16,13 +16,13 @@ You can find the Unity Hub setup file in here:
 
 https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage
 
-You can also refer to [Unity Hub sub-forum](https://forum.unity.com/forums/unity-hub.142/) in forum.unity.com to make sure that you're downloading the latest available version.
+You can also refer to [Unity Hub sub-forum](https://forum.unity.com/forums/unity-hub.142/) in forum.unity.com for additional information and to make sure that you're downloading the latest available version.
 
 Once downloaded, you may need to give execute permission to the UnityHubSetup.AppImage
 
 ~~~ bash
 cd /path/to/download/dir
-sudo chmod +x UnityHubSetup.AppImage
+sudo chmod +x UnityHub.AppImage
 ~~~
 
 Then run the setup file. Either run it from the terminal or just open the file from a file manager.
@@ -34,7 +34,9 @@ Then run the setup file. Either run it from the terminal or just open the file f
 </a>
 
 In the Installs section of Unity Hub application, you can choose a preferred version of Unity that you want to
-install. Unity Hub will automatically download and install it for you. Unity Hub also helps us to easily switch between different versions of Unity.
+install. Unity Hub will automatically download and install it for you. One can have several Unity versions installed. Unity Hub allows you to easily switch between those different versions of Unity.
+
+Unity recommends that we use Unity Hub for creating, opening, and managing all the projects. So always use Unity Hub instead of directly running a specific Editor version which usually gets installed under ~/Unity/Hub/Editor/[Version]. You may create a shortcut to your UnityHub.AppImage file for convenience.
 
 #### Unity Crash
 
