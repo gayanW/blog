@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2019-09-29T15:32:46+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2019-09-29T16:15:31+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on  Linux and Open Source.
 </subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Install Unity3D on Linux</title><link href="https://www.linuxdeveloper.space/install-unity-linux/" rel="alternate" type="text/html" title="Install Unity3D on Linux" /><published>2019-01-06T17:02:23+00:00</published><updated>2019-01-06T17:02:23+00:00</updated><id>https://www.linuxdeveloper.space/install-unity-linux</id><content type="html" xml:base="https://www.linuxdeveloper.space/install-unity-linux/">&lt;p&gt;I’ve been running Unity on my Debian machine, and I’m pretty amazed by how well everything works, 
 though it is not listed as an officially supported distro. 
 It should also work for any other distro, Ubuntu, Fedora and the like.&lt;/p&gt;
@@ -11,12 +11,12 @@ It should also work for any other distro, Ubuntu, Fedora and the like.&lt;/p&gt;
 
 &lt;p&gt;https://public-cdn.cloud.unity3d.com/hub/prod/UnityHub.AppImage&lt;/p&gt;
 
-&lt;p&gt;You can also refer to &lt;a href=&quot;https://forum.unity.com/forums/unity-hub.142/&quot;&gt;Unity Hub sub-forum&lt;/a&gt; in forum.unity.com to make sure that you’re downloading the latest available version.&lt;/p&gt;
+&lt;p&gt;You can also refer to &lt;a href=&quot;https://forum.unity.com/forums/unity-hub.142/&quot;&gt;Unity Hub sub-forum&lt;/a&gt; in forum.unity.com for additional information and to make sure that you’re downloading the latest available version.&lt;/p&gt;
 
 &lt;p&gt;Once downloaded, you may need to give execute permission to the UnityHubSetup.AppImage&lt;/p&gt;
 
 &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; /path/to/download/dir
-&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;chmod +x UnityHubSetup.AppImage
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;chmod +x UnityHub.AppImage
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Then run the setup file. Either run it from the terminal or just open the file from a file manager.&lt;/p&gt;
@@ -28,7 +28,9 @@ It should also work for any other distro, Ubuntu, Fedora and the like.&lt;/p&gt;
 &lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;In the Installs section of Unity Hub application, you can choose a preferred version of Unity that you want to
-install. Unity Hub will automatically download and install it for you. Unity Hub also helps us to easily switch between different versions of Unity.&lt;/p&gt;
+install. Unity Hub will automatically download and install it for you. One can have several Unity versions installed. Unity Hub allows you to easily switch between those different versions of Unity.&lt;/p&gt;
+
+&lt;p&gt;Unity recommends that we use Unity Hub for creating, opening, and managing all the projects. So always use Unity Hub instead of directly running a specific Editor version which usually gets installed under ~/Unity/Hub/Editor/[Version]. You may create a shortcut to your UnityHub.AppImage file for convenience.&lt;/p&gt;
 
 &lt;h4 id=&quot;unity-crash&quot;&gt;Unity Crash&lt;/h4&gt;
 
