@@ -52,4 +52,4 @@ sudo apt-get purge xserver-xorg-video-intel
 
 If that still not fix your issue, try asking in the forums.
 
-If it's not a known issue, you could also send a bug report, which will open an issue in [Issue Tracker](https://issuetracker.unity3d.com/) and Unity team will get back to you.
+If it's not a known issue, you could always send a bug report by opening an issue in [Issue Tracker](https://issuetracker.unity3d.com/) and Unity team probably will get back to you.
