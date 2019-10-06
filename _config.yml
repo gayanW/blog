@@ -16,8 +16,7 @@
 title: Linux Developer Space
 email: gayan@linuxdeveloper.space
 description: > # this means to ignore newlines until "baseurl:"
-  A free colloborative space for Linux developers to share their tuts and tips on 
-  Linux and Open Source.
+  A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://www.linuxdeveloper.space" # the base hostname & protocol for your site, e.g. http://example.com
 permalink: /:title/
