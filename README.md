@@ -7,10 +7,15 @@ bundle config local.GEM_NAME /path/to/local/repository
 ```
 **Example**
 ```
-$ bundle config jekyll-theme-linuxdev
-$ bundle config jekyll-theme-linuxdev /absolute/path/to/jekyll-theme-linuxdev
+$ bundle config local.jekyll-theme-linuxdev /absolute/path/to/jekyll-theme-linuxdev
 ```
 The configuaration will be written into `~/.bundle/config`.
+
+To disable the local override: 
+
+```
+bundle config --delete local.GEM_NAME
+```
 
 Build locally
 --
@@ -23,3 +28,8 @@ Deploy
 --
 
 Site gets auto deployed when a commit is pushed to the master branch. Or we could deploy manually by triggering a build from Travis website.
+
+Theme
+--
+
+When change is made to jekyll-theme-linuxdev repository, do a `bundle install`, or update the revision value in Gemfile.lock manually.
