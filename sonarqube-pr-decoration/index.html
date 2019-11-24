@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    
+        <title>SonarQube Pull Request Decoration</title>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
+">
+
+    
+
+    <link rel="icon" href="/assets/img/blog.png">
+    <link href="https://fonts.googleapis.com/css?family=Alegreya|Roboto|Roboto+Mono" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/damieng.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/syntax/github.css">
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="header">
+			<h1><a href="/">Linux Developer Space</a></h1>
+			<ul>
+				
+				<li>
+					<a href="/">Home</a>
+				</li>
+				
+				<li>
+					<a href="/about">About</a>
+				</li>
+				
+			</ul>
+		</div>
+
+        <div class="post">
+
+  <div class="post__title">
+    <h1>SonarQube Pull Request Decoration</h1>
+  </div>
+  <div class="post__date">
+    <p>November 24, 2019</p>
+  </div>
+  <div class="post__meta">
+    <p></p>
+  </div>
+  <div class="post__content">
+    <h4 id="pull-request-decoration-did-not-happen">Pull request decoration did not happen</h4>
+
+<p>If you got this warning I recommend that you first enable debug logs on your SonarQube server. Then perform a pull request analysis again while inspecting the <a href="https://docs.sonarqube.org/latest/instance-administration/system-info/#header-2">ce.log</a>.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tail --follow sonar-dir/logs/ce.log
+</code></pre></div></div>
+
+<p>If you see these warnings, most probably the system clock of your server is to blame.</p>
+
+<blockquote>
+  <p>GET response did not have expected HTTP code (was 401): {“message”:”‘Issued at’ claim (‘iat’) must be an Integer representing the time that the assertion was issued”,“documentation_url”:“https://developer.github.com/enterprise/2.18/v3”}</p>
+</blockquote>
+
+<blockquote>
+  <p>Pull request decoration did not happen. Please install SonarQube Github application on the repository’s organization or user.</p>
+</blockquote>
+
+<p>To synchronize a system clock to real time, the most recommended solution is to install is chrony.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sudo apt install chrony
+sudo systemctl restart chrony.service
+</code></pre></div></div>
+
+<p>If using a RHEL based distro, run:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum install chrony
+systemctl start chronyd
+</code></pre></div></div>
+
+<p>To check whether there is an actual time drift, issue the following command</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ chronyc tracking
+Reference ID    : A9FEA97B (169.254.169.123)
+Stratum         : 4
+Ref time (UTC)  : Sun Nov 24 15:45:37 2019
+System time     : 46.211318970 seconds fast of NTP time
+Last offset     : -0.000026256 seconds
+RMS offset      : 0.002788091 seconds
+Frequency       : 41.560 ppm fast
+Residual freq   : -0.005 ppm
+Skew            : 5.294 ppm
+Root delay      : 0.000519169 seconds
+Root dispersion : 0.000747741 seconds
+Update interval : 71.3 seconds
+Leap status     : Normal
+</code></pre></div></div>
+
+<p>As you could see from the output, my System time was drifted by about 46 seconds. If there is a time drift, chrony will automatically adjust the clock gradually. You can verify that by issuing <code class="highlighter-rouge">$ chronyc tracking</code> command and observing the <code class="highlighter-rouge">System time</code> line of the output. Once the ‘System time’ property is driven closer to zero, you could try re-running a PR analysis and PR decoration should work fine.</p>
+
+  </div>
+
+  <hr>
+<div>
+	<strong>Courses Really Worth Doing</strong>
+	<ul> 
+		<li>
+			<a href="https://click.linksynergy.com/deeplink?id=*HkhDOSZorQ&mid=39197&murl=https%3A%2F%2Fwww.udemy.com%2Fcourse%2Funrealcourse%2F" target="_top">Learn C++ from basics, by making games in Unreal engine</a>
+
+		</li>
+		<li>
+			<a href="https://click.linksynergy.com/deeplink?id=*HkhDOSZorQ&mid=40328&murl=https%3A%2F%2Fwww.coursera.org%2Flearn%2Falgorithms-part1" target="_top">Master the fundamentals of algorithms offered by Princeton University</a>
+
+		</li>
+		<li>
+			<a href="http://www.kqzyfj.com/click-9183981-13769442" target="_top">Be in demand. Get 10% off any Udacity Nanodegree Program</a>
+
+		</li>
+	</ul>
+</div>
+<hr>
+
+
+  
+
+
+
+
+
+
+
+<!-- Make sure to POST params to match configs in staticman.yml 
+     https://staticman.net/docs/index.html -->
+<h3>Leave a comment</h3>
+<form action="/fake" method="post" id="commentform" class="form-horizontal">
+  <fieldset id="commentfields">
+    <input name="options[redirect]" type="hidden" value="https://www.linuxdeveloper.space/sonarqube-pr-decoration/">
+    <input name="options[slug]" type="hidden" value="sonarqube-pr-decoration">
+
+    <textarea name="fields[message]" id="message" placeholder="Continue the discussion."></textarea>
+
+    <label for="name">Name/alias <span>(Required, displayed)</span></label>
+    <input type="text" name="fields[name]" id="name" placeholder="Name" />
+
+    <label for="email">Email <span>(Required, not shown)</span></label>
+    <input type="text" name="fields[email]" id="email" placeholder="you@domain.com" />
+    <br>
+    <button onclick="setupForm()" type="button" id="commentbutton">Leave response</button>
+  </fieldset>
+</form>
+
+<script>
+    function setupForm() {
+      var status = document.getElementById('commentstatus')
+      status.innerText = ''
+
+      var requiredIds = [ 'message', 'email', 'name']
+      var missing = requiredIds.filter(id => document.getElementById(id).value.length < 3)
+      if (missing.length > 0) {
+        status.innerText = 'Some required fields are missing - (' + missing.join(', ') + ')'
+        return
+      }
+
+      var button = document.getElementById('commentbutton')
+      if (button.innerText != 'Confirm comment') {
+        button.innerText = 'Confirm comment'
+        return
+      }
+
+      var form = document.getElementById('commentform')
+      form.action = 'https://dev.staticman.net/v3/entry/github/gayanw/blog/master/comments'
+      button.innerText = 'Posting...'
+      button.disabled = true
+      form.submit()
+      var fields = document.getElementById('commentfields')                                         
+      fields.disabled = true
+    }
+  </script>
+<div id="commentstatus" style="clear:both" class="status"></div>
+
+
+
+
+</div>
+
+
+	<div class="footer">
+		<p>&copy; 2019 <a href="/">Gayan Weerakutti</a>, unless otherwise noted.</p>
+	</div>
+	</div>
+</body>
+
+</html>
