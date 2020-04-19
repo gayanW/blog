@@ -4,9 +4,7 @@ title:  "Install Unity3D on Linux"
 date:   2019-01-6 22:32:23 +0530
 categories: linux unity
 ---
-I've been running Unity on my Debian machine, and I'm pretty amazed by how well everything works, 
-though it is not listed as an officially supported distro. 
-It should also work for any other distro, Ubuntu, Fedora and the like.
+I've been running Unity on my Debian / Ubuntu machines for so long and never have any issues whatsoever. As of now Ubuntu 18.04, and CentOS 7 are listed as the officially supported distros. I'm currently developing a sci-fi brain teaser which is currently on closed beta on Google Play, is solely build on Unity Linux. Again, it's no different from running it on a Windows machine.
 
 The preferred way of installing Unity on Linux is by first installing Unity Hub.
 
