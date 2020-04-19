@@ -22,6 +22,7 @@ To synchronize a system clock to real time, the most recommended solution is to 
 
 	sudo apt install chrony
 	sudo systemctl restart chrony.service
+	sudo systemctl enable chrony.service
 
 If using a RHEL based distro, run:
 
@@ -47,3 +48,7 @@ To check whether there is an actual time drift, issue the following command
 
 
 As you could see from the output, my System time was drifted by about 46 seconds. If there is a time drift, chrony will automatically adjust the clock gradually. You can verify that by issuing `$ chronyc tracking` command and observing the `System time` line of the output. Once the 'System time' property is driven closer to zero, you could try re-running a PR analysis and PR decoration should work fine.
+
+# Socket time out
+
+Increase javaOpts ...
