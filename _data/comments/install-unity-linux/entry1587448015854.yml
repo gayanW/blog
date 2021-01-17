@@ -1,0 +1,9 @@
+_id: 824088c0-8393-11ea-baff-5d9cda4a4a9f
+message: >-
+  Quick question: have you had success downloading any other versions of Unity
+  in this way?  I tried the 2018 and 2017 versions today, and the Unity Hub
+  running on CentOS 7 downloaded .exe versions (Windows) instead of the .sh
+  versions.  There was no option to change to a Linux version of the Editor...
+name: ChromeBen
+email: 56c22627e132844f3c65766d8df67af4
+date: 1587448015
