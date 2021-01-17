@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    
+        <title>Traverse Fractured Space Time - Indie Game Review</title>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
+">
+
+    
+
+    <link rel="icon" href="/assets/img/blog.png">
+    <link href="https://fonts.googleapis.com/css?family=Alegreya|Roboto|Roboto+Mono" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/damieng.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/syntax/github.css">
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="header">
+			<h1><a href="/">Linux Developer Space</a></h1>
+			<ul>
+				
+				<li>
+					<a href="/">Home</a>
+				</li>
+				
+				<li>
+					<a href="/about">About</a>
+				</li>
+				
+			</ul>
+		</div>
+
+        <div class="post">
+
+  <div class="post__title">
+    <h1>Traverse Fractured Space Time - Indie Game Review</h1>
+  </div>
+  <div class="post__date">
+    <p>January 16, 2020</p>
+  </div>
+  <div class="post__meta">
+    <p></p>
+  </div>
+  <div class="post__content">
+    <p><em>The following is a game review written by Wahaj, a tech enthusiast, writer, and aspiring physicist, about my first ever indie title, Gravity. Since this being a Linux blog, I’m also happy to announce that this game falls under the #MadeOnLinux category.</em></p>
+
+<p><a href="https://play.google.com/store/apps/details?id=defaulttm.gravity">Gravity</a> is a very recently released Android game from the indie developer Gayan Weerakutti. The developer has been working on the game part-time for over a year, making this something of a passion project. The game itself is a brain teaser style game with a Sci-Fi theme, and gameplay elements designed to match the theme.</p>
+
+<h4 id="plot">Plot</h4>
+
+<p>The plot is fairly simple and straightforward and is only really explained at the beginning of the game. In its search for new resources and exploration, it has run out of resources and is in significant danger. Humanity is now relying on a single explorer to do whatever they can to guide humanity back to stability. The writing is pretty basic and there is a lot to be fleshed out, but the story only plays a small part in the game so it is not a huge bother.</p>
+
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/o4vJ0LMbyU4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+
+<h4 id="gameplay">Gameplay</h4>
+
+<p>The gameplay, like the plot, is fairly simple. However, this time, it plays into the game’s advantage, as it leads to a nice intuitive experience. This is how it works: you move your character across some tiles, and you need to avoid the black holes and reach the final destination. However, there’s a catch. On alternating turns, you can only move 1 tile and 3 tiles. This is supposed to represent the 4-dimensional structure of space-time being fractured. There are an additional element of power-ups that are unlocked as you progress in the game. The puzzles can be challenging and if you don’t think them through, some of them are really difficult. However, they are fun at the same time. As you move on, additional gameplay elements that make the puzzles a bit more complex, however, without losing the games inherent intuitive simpleness.</p>
+
+<h4 id="visuals-and-audio">Visuals and Audio</h4>
+
+<p>The game incorporates soothing music, reminiscent of a lot of minimalist indie games and that’s certainly a nice thing and makes the experience a relaxing one, where you can just wind down. The same goes for the visuals, which are heavily Sci-Fi themed. Your character is an astronaut, walking across the background of space.</p>
+
+<h4 id="conclusion">Conclusion</h4>
+
+<p>Overall, Gravity looks like a nice indie game that combines a lot of simple but fun gameplay elements, along with charming visuals and sounds. It even manages to have no forced ads that would distract you, despite being available for free on the <a href="https://play.google.com/store/apps/details?id=defaulttm.gravity">Google Play Store</a>!</p>
+
+
+  </div>
+
+  
+
+
+
+
+
+
+
+<!-- Make sure to POST params to match configs in staticman.yml 
+     https://staticman.net/docs/index.html -->
+<h3>Leave a comment</h3>
+<form action="/fake" method="post" id="commentform" class="form-horizontal">
+  <fieldset id="commentfields">
+    <input name="options[redirect]" type="hidden" value="https://www.linuxdeveloper.space/garvity-review/">
+    <input name="options[slug]" type="hidden" value="garvity-review">
+
+    <textarea name="fields[message]" id="message" placeholder="Continue the discussion."></textarea>
+
+    <label for="name">Name/alias <span>(Required, displayed)</span></label>
+    <input type="text" name="fields[name]" id="name" placeholder="Name" />
+
+    <label for="email">Email <span>(Required, not shown)</span></label>
+    <input type="text" name="fields[email]" id="email" placeholder="you@domain.com" />
+
+    <!-- https://ruddra.com/posts/implement-newsletters-using-staticman/ -->
+    <!-- https://yasoob.me/posts/staticman_comment_notifications_mailgun/ -->
+    <input type="checkbox" name="options[subscribe]" value="email">
+    <label>Notify me of new comments</label>
+    <br>
+
+    <button onclick="setupForm()" type="button" id="commentbutton">Leave response</button>
+  </fieldset>
+</form>
+
+<script>
+    function setupForm() {
+      var status = document.getElementById('commentstatus')
+      status.innerText = ''
+
+      var requiredIds = [ 'message', 'email', 'name']
+      var missing = requiredIds.filter(id => document.getElementById(id).value.length < 3)
+      if (missing.length > 0) {
+        status.innerText = 'Some required fields are missing - (' + missing.join(', ') + ')'
+        return
+      }
+
+      var button = document.getElementById('commentbutton')
+      if (button.innerText != 'Confirm comment') {
+        button.innerText = 'Confirm comment'
+        return
+      }
+
+      var form = document.getElementById('commentform')
+      form.action = 'https://dev.staticman.net/v3/entry/github/gayanw/blog/master/comments'
+      button.innerText = 'Posting...'
+      button.disabled = true
+      form.submit()
+      var fields = document.getElementById('commentfields')                                         
+      fields.disabled = true
+    }
+  </script>
+<div id="commentstatus" style="clear:both" class="status"></div>
+
+
+
+
+</div>
+
+
+	<div class="footer">
+		<p>&copy; 2021 <a href="/">Gayan Weerakutti</a>, unless otherwise noted.</p>
+	</div>
+	</div>
+</body>
+
+</html>
