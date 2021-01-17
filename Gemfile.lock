@@ -1,5 +1,5 @@
 GIT
-  remote: git://github.com/gayanw/jekyll-theme-linuxdev.git
+  remote: https://github.com/gayanw/jekyll-theme-linuxdev.git
   revision: 75378eae26556f578d597c364287d40b2c4c574c
   branch: master
   specs:
@@ -256,4 +256,4 @@ DEPENDENCIES
   tzinfo-data
 
 BUNDLED WITH
-   1.16.1
+   2.1.4
