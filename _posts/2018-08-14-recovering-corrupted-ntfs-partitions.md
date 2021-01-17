@@ -18,7 +18,7 @@ TestDisk has a QUICK SEARCH option which can search and list all your missing pa
 
 Restart your computer and your missing partitions should now show up.
 
-I won’t go into detail. For a more thorough guide, follow the [Step By Step guide](testdisk-step-by-step) from the official Wiki.
+I won’t go into detail. For a more thorough guide, follow the [Step By Step guide][testdisk-step-by-step] from the official Wiki.
 
 #### How to fix when my NTFS goes RAW?
 
