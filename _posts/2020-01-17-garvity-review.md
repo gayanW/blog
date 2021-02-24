@@ -24,6 +24,6 @@ The game incorporates soothing music, reminiscent of a lot of minimalist indie g
 
 #### Conclusion
 
-Overall, Gravity looks like a nice indie game that combines a lot of simple but fun gameplay elements, along with charming visuals and sounds. It even manages to have no forced ads that would distract you, despite being available for free on the [Google Play Store][gravity]!
+Overall, Gravity looks like a nice indie game that combines a lot of simple but fun gameplay elements, along with charming visuals and sounds. It even manages to have no forced ads that would distract you, despite being available for free on the Google Play Store.
 
 [gravity]: https://play.google.com/store/apps/details?id=defaulttm.gravity
