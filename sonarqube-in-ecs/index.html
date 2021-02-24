@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    
+        <title>Running SonarQube in ECS</title>
+    
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta name="description" content="A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
+">
+
+    
+
+    <link rel="icon" href="/assets/img/blog.png">
+    <link href="https://fonts.googleapis.com/css?family=Alegreya|Roboto|Roboto+Mono" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/assets/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/damieng.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/syntax/github.css">
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="header">
+			<h1><a href="/">Linux Developer Space</a></h1>
+			<ul>
+				
+				<li>
+					<a href="/">Home</a>
+				</li>
+				
+				<li>
+					<a href="/about">About</a>
+				</li>
+				
+			</ul>
+		</div>
+
+        <div class="post">
+
+  <div class="post__title">
+    <h1>Running SonarQube in ECS</h1>
+  </div>
+  <div class="post__date">
+    <p>February 24, 2021</p>
+  </div>
+  <div class="post__meta">
+    <p></p>
+  </div>
+  <div class="post__content">
+    <p>This guide briefs the steps required to deploy SonarQube Server in Amazon ECS. An ECS task definition needs to be created which is then used to launch SoanrQube as a service within Amazon ECS. Ready-made docker images for different SonarQube editions and versions can be found in Docker Hub, which we’ll be using for the deployment.</p>
+
+<p>Create an EFS file system to be used with SonarQube
+When running SonarQube in ECS, persistent storage such as an EFS volume is required to prevent data loss. Otherwise, essential server data could be lost in case the container restarts or terminates. It also helps when updating the server to a new version or upgrading to a higher edition.</p>
+
+<h1 id="create-ecs-task-definition">Create ECS task definition</h1>
+
+<p>Make sure that the task execution IAM role has full access to the EFS created.</p>
+
+<p>Furthermore, this role should have the necessary permissions required to pull container images and to publish logs to Amazon CloudWatch.</p>
+
+<h2 id="set-an-appropriate-task-size">Set an appropriate task size</h2>
+
+<p>As mentioned in the docs, SonarQube server requires at least 2GB of RAM to run efficiently and 1GB of free RAM for the OS.</p>
+
+<h2 id="volumes">Volumes</h2>
+
+<p>Under volumes add the EFS file system that is being created for SonarQube.</p>
+
+<h2 id="container-definitions">Container definitions</h2>
+
+<p>Under container definitions, specify a SonarQube image as the image used to start your container. If this is image is being stored in ECR, make sure that the ECR Task execution IAM role has the permission to pull images from ECR.</p>
+
+<h3 id="port-mappings">Port mappings</h3>
+
+<p>The default port that SonarQube runs is “9000”. So under port mappings also set the container port to 9000.</p>
+
+<h3 id="environment">ENVIRONMENT</h3>
+
+<p>The default operating system limits on mmap counts are likely to be too low, which may result in out-of-memory exceptions. Therefore, SonarQube recommends that we set vm.max_map_count to a value greater than or equal to 524288. However, in ECS we can not control the ability to create memory maps.</p>
+
+<p>So disallow memory-mapping altogether,  enter the following Docker CMD parameters, into the input field named ‘Command’.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-Dsonar.search.javaAdditionalOpts=-Dnode.store.allow_mmap=false
+</code></pre></div></div>
+
+<h4 id="environment-variables">Environment variables</h4>
+<p>The following environment variables should be set. These are referenced by the SonarQube docker image and is required to be able to successfully run the application.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SONAR_JDBC_URL
+SONAR_JDBC_PASSWORD
+SONAR_JDBC_USERNAME
+</code></pre></div></div>
+
+<p>If the JDBC URL is updated, the server ID, which is stored in the database will be re-generated and you’ll need a new license. So make sure to use an external database and to make backups.</p>
+
+<h3 id="storage-and-logging">STORAGE AND LOGGING</h3>
+
+<p>Under ‘STORAGE AND LOGGING’, add the following mount points to your EFS volume.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>/opt/sonarqube/data
+/opt/sonarqube/extensions
+/opt/sonarqube/logs
+</code></pre></div></div>
+
+<h2 id="resource-limits">RESOURCE LIMITS</h2>
+
+<p>The user running SonarQube should have permission to have at least 131072 open descriptors and should be able to open at least 8192 threads.</p>
+
+<p>Set the recommended Ulimits under ‘RESOURCE LIMITS’</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><strong>Limit name</strong> .</th>
+      <th style="text-align: left"><strong>Soft limit</strong> .</th>
+      <th style="text-align: center"><strong>Hard limit</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>NOFILE</td>
+      <td style="text-align: left">131072</td>
+      <td style="text-align: center">131072</td>
+    </tr>
+    <tr>
+      <td>NPROC</td>
+      <td style="text-align: left">8192</td>
+      <td style="text-align: center">8192</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="creating-the-sonarqube-service">Creating the SonarQube Service</h1>
+
+<p>Now create a service from the task definition created. In the service configurations make sure to set FARGATE as the launch type. Set the ‘number of tasks’ to 1. Since, running multiple instances populating the same database is only supported by the Data Center Edition, and requires further configuration changes.</p>
+
+<p>Make sure that the security group attached to the service instance has an inbound rule that allows TCP 9000. Also add an inbound rule of type NFS, for the instance to be able to access the EFS volume created. Once the task is up and running, the SonarQube server should be accessible via the private IP of the running task and port 9000.</p>
+
+<p>Additionally, one could set up DNS routes, so to have convenient access to the server.</p>
+
+  </div>
+
+  
+
+
+
+
+
+
+
+<!-- Make sure to POST params to match configs in staticman.yml 
+     https://staticman.net/docs/index.html -->
+<h3>Leave a comment</h3>
+<form action="/fake" method="post" id="commentform" class="form-horizontal">
+  <fieldset id="commentfields">
+    <input name="options[redirect]" type="hidden" value="https://www.linuxdeveloper.space/sonarqube-in-ecs/">
+    <input name="options[slug]" type="hidden" value="sonarqube-in-ecs">
+
+    <textarea name="fields[message]" id="message" placeholder="Continue the discussion."></textarea>
+
+    <label for="name">Name/alias <span>(Required, displayed)</span></label>
+    <input type="text" name="fields[name]" id="name" placeholder="Name" />
+
+    <label for="email">Email <span>(Required, not shown)</span></label>
+    <input type="text" name="fields[email]" id="email" placeholder="you@domain.com" />
+
+    <!-- https://ruddra.com/posts/implement-newsletters-using-staticman/ -->
+    <!-- https://yasoob.me/posts/staticman_comment_notifications_mailgun/ -->
+    <input type="checkbox" name="options[subscribe]" value="email">
+    <label>Notify me of new comments</label>
+    <br>
+
+    <button onclick="setupForm()" type="button" id="commentbutton">Leave response</button>
+  </fieldset>
+</form>
+
+<script>
+    function setupForm() {
+      var status = document.getElementById('commentstatus')
+      status.innerText = ''
+
+      var requiredIds = [ 'message', 'email', 'name']
+      var missing = requiredIds.filter(id => document.getElementById(id).value.length < 3)
+      if (missing.length > 0) {
+        status.innerText = 'Some required fields are missing - (' + missing.join(', ') + ')'
+        return
+      }
+
+      var button = document.getElementById('commentbutton')
+      if (button.innerText != 'Confirm comment') {
+        button.innerText = 'Confirm comment'
+        return
+      }
+
+      var form = document.getElementById('commentform')
+      form.action = 'https://dev.staticman.net/v3/entry/github/gayanw/blog/master/comments'
+      button.innerText = 'Posting...'
+      button.disabled = true
+      form.submit()
+      var fields = document.getElementById('commentfields')                                         
+      fields.disabled = true
+    }
+  </script>
+<div id="commentstatus" style="clear:both" class="status"></div>
+
+
+
+
+</div>
+
+
+	<div class="footer">
+		<p>&copy; 2021 <a href="/">Gayan Weerakutti</a>, unless otherwise noted.</p>
+	</div>
+	</div>
+</body>
+
+</html>

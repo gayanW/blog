@@ -1,5 +1,94 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2021-01-17T18:50:58+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
-</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Traverse Fractured Space Time - Indie Game Review</title><link href="https://www.linuxdeveloper.space/garvity-review/" rel="alternate" type="text/html" title="Traverse Fractured Space Time - Indie Game Review" /><published>2020-01-16T19:20:00+00:00</published><updated>2020-01-16T19:20:00+00:00</updated><id>https://www.linuxdeveloper.space/garvity-review</id><content type="html" xml:base="https://www.linuxdeveloper.space/garvity-review/">&lt;p&gt;&lt;em&gt;The following is a game review written by Wahaj, a tech enthusiast, writer, and aspiring physicist, about my first ever indie title, Gravity. Since this being a Linux blog, I’m also happy to announce that this game falls under the #MadeOnLinux category.&lt;/em&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2021-02-24T19:20:25+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
+</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Running SonarQube in ECS</title><link href="https://www.linuxdeveloper.space/sonarqube-in-ecs/" rel="alternate" type="text/html" title="Running SonarQube in ECS" /><published>2021-02-24T18:00:00+00:00</published><updated>2021-02-24T18:00:00+00:00</updated><id>https://www.linuxdeveloper.space/sonarqube-in-ecs</id><content type="html" xml:base="https://www.linuxdeveloper.space/sonarqube-in-ecs/">&lt;p&gt;This guide briefs the steps required to deploy SonarQube Server in Amazon ECS. An ECS task definition needs to be created which is then used to launch SoanrQube as a service within Amazon ECS. Ready-made docker images for different SonarQube editions and versions can be found in Docker Hub, which we’ll be using for the deployment.&lt;/p&gt;
+
+&lt;p&gt;Create an EFS file system to be used with SonarQube
+When running SonarQube in ECS, persistent storage such as an EFS volume is required to prevent data loss. Otherwise, essential server data could be lost in case the container restarts or terminates. It also helps when updating the server to a new version or upgrading to a higher edition.&lt;/p&gt;
+
+&lt;h1 id=&quot;create-ecs-task-definition&quot;&gt;Create ECS task definition&lt;/h1&gt;
+
+&lt;p&gt;Make sure that the task execution IAM role has full access to the EFS created.&lt;/p&gt;
+
+&lt;p&gt;Furthermore, this role should have the necessary permissions required to pull container images and to publish logs to Amazon CloudWatch.&lt;/p&gt;
+
+&lt;h2 id=&quot;set-an-appropriate-task-size&quot;&gt;Set an appropriate task size&lt;/h2&gt;
+
+&lt;p&gt;As mentioned in the docs, SonarQube server requires at least 2GB of RAM to run efficiently and 1GB of free RAM for the OS.&lt;/p&gt;
+
+&lt;h2 id=&quot;volumes&quot;&gt;Volumes&lt;/h2&gt;
+
+&lt;p&gt;Under volumes add the EFS file system that is being created for SonarQube.&lt;/p&gt;
+
+&lt;h2 id=&quot;container-definitions&quot;&gt;Container definitions&lt;/h2&gt;
+
+&lt;p&gt;Under container definitions, specify a SonarQube image as the image used to start your container. If this is image is being stored in ECR, make sure that the ECR Task execution IAM role has the permission to pull images from ECR.&lt;/p&gt;
+
+&lt;h3 id=&quot;port-mappings&quot;&gt;Port mappings&lt;/h3&gt;
+
+&lt;p&gt;The default port that SonarQube runs is “9000”. So under port mappings also set the container port to 9000.&lt;/p&gt;
+
+&lt;h3 id=&quot;environment&quot;&gt;ENVIRONMENT&lt;/h3&gt;
+
+&lt;p&gt;The default operating system limits on mmap counts are likely to be too low, which may result in out-of-memory exceptions. Therefore, SonarQube recommends that we set vm.max_map_count to a value greater than or equal to 524288. However, in ECS we can not control the ability to create memory maps.&lt;/p&gt;
+
+&lt;p&gt;So disallow memory-mapping altogether,  enter the following Docker CMD parameters, into the input field named ‘Command’.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;-Dsonar.search.javaAdditionalOpts=-Dnode.store.allow_mmap=false
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;environment-variables&quot;&gt;Environment variables&lt;/h4&gt;
+&lt;p&gt;The following environment variables should be set. These are referenced by the SonarQube docker image and is required to be able to successfully run the application.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SONAR_JDBC_URL
+SONAR_JDBC_PASSWORD
+SONAR_JDBC_USERNAME
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If the JDBC URL is updated, the server ID, which is stored in the database will be re-generated and you’ll need a new license. So make sure to use an external database and to make backups.&lt;/p&gt;
+
+&lt;h3 id=&quot;storage-and-logging&quot;&gt;STORAGE AND LOGGING&lt;/h3&gt;
+
+&lt;p&gt;Under ‘STORAGE AND LOGGING’, add the following mount points to your EFS volume.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/opt/sonarqube/data
+/opt/sonarqube/extensions
+/opt/sonarqube/logs
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;resource-limits&quot;&gt;RESOURCE LIMITS&lt;/h2&gt;
+
+&lt;p&gt;The user running SonarQube should have permission to have at least 131072 open descriptors and should be able to open at least 8192 threads.&lt;/p&gt;
+
+&lt;p&gt;Set the recommended Ulimits under ‘RESOURCE LIMITS’&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;&lt;strong&gt;Limit name&lt;/strong&gt; .&lt;/th&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;&lt;strong&gt;Soft limit&lt;/strong&gt; .&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;&lt;strong&gt;Hard limit&lt;/strong&gt;&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;NOFILE&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;131072&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;131072&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;NPROC&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;8192&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;8192&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h1 id=&quot;creating-the-sonarqube-service&quot;&gt;Creating the SonarQube Service&lt;/h1&gt;
+
+&lt;p&gt;Now create a service from the task definition created. In the service configurations make sure to set FARGATE as the launch type. Set the ‘number of tasks’ to 1. Since, running multiple instances populating the same database is only supported by the Data Center Edition, and requires further configuration changes.&lt;/p&gt;
+
+&lt;p&gt;Make sure that the security group attached to the service instance has an inbound rule that allows TCP 9000. Also add an inbound rule of type NFS, for the instance to be able to access the EFS volume created. Once the task is up and running, the SonarQube server should be accessible via the private IP of the running task and port 9000.&lt;/p&gt;
+
+&lt;p&gt;Additionally, one could set up DNS routes, so to have convenient access to the server.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">This guide briefs the steps required to deploy SonarQube Server in Amazon ECS. An ECS task definition needs to be created which is then used to launch SoanrQube as a service within Amazon ECS. Ready-made docker images for different SonarQube editions and versions can be found in Docker Hub, which we’ll be using for the deployment.</summary></entry><entry><title type="html">Traverse Fractured Space Time - Indie Game Review</title><link href="https://www.linuxdeveloper.space/garvity-review/" rel="alternate" type="text/html" title="Traverse Fractured Space Time - Indie Game Review" /><published>2020-01-16T19:20:00+00:00</published><updated>2020-01-16T19:20:00+00:00</updated><id>https://www.linuxdeveloper.space/garvity-review</id><content type="html" xml:base="https://www.linuxdeveloper.space/garvity-review/">&lt;p&gt;&lt;em&gt;The following is a game review written by Wahaj, a tech enthusiast, writer, and aspiring physicist, about my first ever indie title, Gravity. Since this being a Linux blog, I’m also happy to announce that this game falls under the #MadeOnLinux category.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;a href=&quot;https://play.google.com/store/apps/details?id=defaulttm.gravity&quot;&gt;Gravity&lt;/a&gt; is a very recently released Android game from the indie developer Gayan Weerakutti. The developer has been working on the game part-time for over a year, making this something of a passion project. The game itself is a brain teaser style game with a Sci-Fi theme, and gameplay elements designed to match the theme.&lt;/p&gt;
 
@@ -19,7 +108,7 @@
 
 &lt;h4 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h4&gt;
 
-&lt;p&gt;Overall, Gravity looks like a nice indie game that combines a lot of simple but fun gameplay elements, along with charming visuals and sounds. It even manages to have no forced ads that would distract you, despite being available for free on the &lt;a href=&quot;https://play.google.com/store/apps/details?id=defaulttm.gravity&quot;&gt;Google Play Store&lt;/a&gt;!&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">The following is a game review written by Wahaj, a tech enthusiast, writer, and aspiring physicist, about my first ever indie title, Gravity. Since this being a Linux blog, I’m also happy to announce that this game falls under the #MadeOnLinux category.</summary></entry><entry><title type="html">SonarQube Pull Request Decoration</title><link href="https://www.linuxdeveloper.space/sonarqube-pr-decoration/" rel="alternate" type="text/html" title="SonarQube Pull Request Decoration" /><published>2019-11-24T05:30:18+00:00</published><updated>2019-11-24T05:30:18+00:00</updated><id>https://www.linuxdeveloper.space/sonarqube-pr-decoration</id><content type="html" xml:base="https://www.linuxdeveloper.space/sonarqube-pr-decoration/">&lt;h4 id=&quot;pull-request-decoration-did-not-happen&quot;&gt;Pull request decoration did not happen&lt;/h4&gt;
+&lt;p&gt;Overall, Gravity looks like a nice indie game that combines a lot of simple but fun gameplay elements, along with charming visuals and sounds. It even manages to have no forced ads that would distract you, despite being available for free on the Google Play Store.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">The following is a game review written by Wahaj, a tech enthusiast, writer, and aspiring physicist, about my first ever indie title, Gravity. Since this being a Linux blog, I’m also happy to announce that this game falls under the #MadeOnLinux category.</summary></entry><entry><title type="html">SonarQube Pull Request Decoration</title><link href="https://www.linuxdeveloper.space/sonarqube-pr-decoration/" rel="alternate" type="text/html" title="SonarQube Pull Request Decoration" /><published>2019-11-24T05:30:18+00:00</published><updated>2019-11-24T05:30:18+00:00</updated><id>https://www.linuxdeveloper.space/sonarqube-pr-decoration</id><content type="html" xml:base="https://www.linuxdeveloper.space/sonarqube-pr-decoration/">&lt;h4 id=&quot;pull-request-decoration-did-not-happen&quot;&gt;Pull request decoration did not happen&lt;/h4&gt;
 
 &lt;p&gt;If you got this warning I recommend that you first enable debug logs on your SonarQube server. Then perform a pull request analysis again while inspecting the &lt;a href=&quot;https://docs.sonarqube.org/latest/instance-administration/system-info/#header-2&quot;&gt;ce.log&lt;/a&gt;.&lt;/p&gt;
 
