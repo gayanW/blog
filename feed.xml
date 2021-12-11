@@ -1,5 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2021-09-27T21:37:07+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
-</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Running SonarQube in ECS</title><link href="https://www.linuxdeveloper.space/sonarqube-in-ecs/" rel="alternate" type="text/html" title="Running SonarQube in ECS" /><published>2021-02-24T18:00:00+00:00</published><updated>2021-02-24T18:00:00+00:00</updated><id>https://www.linuxdeveloper.space/sonarqube-in-ecs</id><content type="html" xml:base="https://www.linuxdeveloper.space/sonarqube-in-ecs/">&lt;p&gt;This guide briefs the steps required to deploy SonarQube Server in Amazon ECS. An ECS task definition needs to be created which is then used to launch SoanrQube as a service within Amazon ECS. Ready-made docker images for different SonarQube editions and versions can be found in Docker Hub, which we’ll be using for the deployment.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2021-12-11T07:58:24+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
+</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">CVE-2021-44228 Fixing Log4J2 Vulnerability in Spring Boot</title><link href="https://www.linuxdeveloper.space/log4j-vulnerability-fix/" rel="alternate" type="text/html" title="CVE-2021-44228 Fixing Log4J2 Vulnerability in Spring Boot" /><published>2021-12-11T07:30:00+00:00</published><updated>2021-12-11T07:30:00+00:00</updated><id>https://www.linuxdeveloper.space/log4j-vulnerability-fix</id><content type="html" xml:base="https://www.linuxdeveloper.space/log4j-vulnerability-fix/">&lt;p&gt;&lt;strong&gt;How to check my application is vulnerable?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;For your application to be vulnerable &lt;code class=&quot;highlighter-rouge&quot;&gt;log4j-core&lt;/code&gt; has to be in your classpath.&lt;/p&gt;
+
+&lt;p&gt;The vulnerability is only present in &lt;code class=&quot;highlighter-rouge&quot;&gt;log4j-core&lt;/code&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;2.14.1&lt;/code&gt; and earlier versions.&lt;/p&gt;
+
+&lt;p&gt;For Maven projects:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./mvnw dependency:list | grep log4j
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;For Gradle:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./gradlew dependencies | grep log4j
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Once you grep the console output, check whether log4j-core is present in your dependencies list. 
+You can ignore &lt;code class=&quot;highlighter-rouge&quot;&gt;log4j-to-slf4j&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;log4j-api&lt;/code&gt; dependencies in your grep output as these two were included by the &lt;code class=&quot;highlighter-rouge&quot;&gt;spring-boot-starter-logging&lt;/code&gt; and cannot be exploited on their own. 
+Only applications that include &lt;code class=&quot;highlighter-rouge&quot;&gt;log4j-core&lt;/code&gt; and accept user input to format log messages are vulnerable.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Fixes&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;If your application is vulnerable consider one of the following fixes.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Upgrade log4j to 2.15.0 or newer&lt;/li&gt;
+  &lt;li&gt;Remove &lt;code class=&quot;highlighter-rouge&quot;&gt;org.apache.logging.log4j.core.lookupJndiLookup&lt;/code&gt; class from the classpath&lt;/li&gt;
+  &lt;li&gt;Switch to SLF4J&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">How to check my application is vulnerable?</summary></entry><entry><title type="html">Running SonarQube in ECS</title><link href="https://www.linuxdeveloper.space/sonarqube-in-ecs/" rel="alternate" type="text/html" title="Running SonarQube in ECS" /><published>2021-02-24T18:00:00+00:00</published><updated>2021-02-24T18:00:00+00:00</updated><id>https://www.linuxdeveloper.space/sonarqube-in-ecs</id><content type="html" xml:base="https://www.linuxdeveloper.space/sonarqube-in-ecs/">&lt;p&gt;This guide briefs the steps required to deploy SonarQube Server in Amazon ECS. An ECS task definition needs to be created which is then used to launch SoanrQube as a service within Amazon ECS. Ready-made docker images for different SonarQube editions and versions can be found in Docker Hub, which we’ll be using for the deployment.&lt;/p&gt;
 
 &lt;p&gt;Create an EFS file system to be used with SonarQube
 When running SonarQube in ECS, persistent storage such as an EFS volume is required to prevent data loss. Otherwise, essential server data could be lost in case the container restarts or terminates. It also helps when updating the server to a new version or upgrading to a higher edition.&lt;/p&gt;
