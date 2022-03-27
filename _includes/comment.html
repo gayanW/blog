@@ -1,9 +1,9 @@
 {% if comment.url %}
 <a href="{{ comment.url }}" rel="nofollow">
-  <img alt="Gravatar for {{ comment.name | xml_escape }}" src="https://secure.gravatar.com/avatar/{{ comment.gravatar }}?s=64&amp;d=retro&amp;r=pg" srcset="https://secure.gravatar.com/avatar/{{ comment.gravatar }}?s=128&amp;d=retro&amp;r=pg 2x" class="avatar avatar-64 photo" height="64" width="64">
+  <img alt="Gravatar for {{ comment.name | xml_escape }}" src="https://secure.gravatar.com/avatar/{{ comment.email }}?s=64&amp;d=identicon&amp;r=pg" srcset="https://secure.gravatar.com/avatar/{{ comment.email }}?s=128&amp;d=identicon&amp;r=pg 2x" class="avatar avatar-64 photo" height="64" width="64">
 </a>
 {% else %}
-<img alt="Gravatar for {{ comment.name | xml_escape }}" src="https://secure.gravatar.com/avatar/{{ comment.gravatar }}?s=64&amp;d=retro&amp;r=pg" srcset="https://secure.gravatar.com/avatar/{{ comment.gravatar }}?s=128&amp;d=retro&amp;r=pg 2x" class="avatar avatar-64 photo" height="64" width="64">
+<img alt="Gravatar for {{ comment.name | xml_escape }}" src="https://secure.gravatar.com/avatar/{{ comment.email }}?s=64&amp;d=identicon&amp;r=pg" srcset="https://secure.gravatar.com/avatar/{{ comment.email }}?s=128&amp;d=identicon&amp;r=pg 2x" class="avatar avatar-64 photo" height="64" width="64">
 {% endif %}
 
 <blockquote id="{{ comment.id }}">
