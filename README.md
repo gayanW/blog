@@ -40,4 +40,4 @@ When change is made to jekyll-theme-linuxdev repository, do a `bundle install`, 
 References
 ----------
 
- - [Dependency version](https://pages.github.com/versions/)
+ - [GitHub pages dependency versions](https://pages.github.com/versions/)
