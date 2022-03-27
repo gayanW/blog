@@ -33,7 +33,7 @@ ol li { padding: 5px; padding-left: 10px; }
 
 blockquote { color: #272727; border-left: 4px solid #272727; padding-left: 15px; font-size: 18px; letter-spacing: -1px; font-style: italic; }
 
-.wrapper { max-width: 600px; margin: auto; padding: 60px 30px 60px 30px; }
+.wrapper { max-width: 737px; margin: auto; padding: 60px 30px 60px 30px; }
 @media screen and (max-width: 600px) { .wrapper { padding: 20px; } }
 
 .header { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 50px; }

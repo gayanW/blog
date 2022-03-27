@@ -1,22 +1,116 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2021-12-11T07:58:24+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Developer Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
-</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">CVE-2021-44228 Fixing Log4J2 Vulnerability in Spring Boot</title><link href="https://www.linuxdeveloper.space/log4j-vulnerability-fix/" rel="alternate" type="text/html" title="CVE-2021-44228 Fixing Log4J2 Vulnerability in Spring Boot" /><published>2021-12-11T07:30:00+00:00</published><updated>2021-12-11T07:30:00+00:00</updated><id>https://www.linuxdeveloper.space/log4j-vulnerability-fix</id><content type="html" xml:base="https://www.linuxdeveloper.space/log4j-vulnerability-fix/">&lt;p&gt;&lt;strong&gt;How to check my application is vulnerable?&lt;/strong&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2022-03-27T19:31:52+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Dev Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
+</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Error Handling &amp;amp; Retry with Apache Beam and Flink</title><link href="https://www.linuxdeveloper.space/retry-apache-beam-flink/" rel="alternate" type="text/html" title="Error Handling &amp;amp; Retry with Apache Beam and Flink" /><published>2022-03-26T18:30:00+00:00</published><updated>2022-03-26T18:30:00+00:00</updated><id>https://www.linuxdeveloper.space/retry-apache-beam-flink</id><content type="html" xml:base="https://www.linuxdeveloper.space/retry-apache-beam-flink/">&lt;p&gt;This guide discusses one of the approaches to retry errors when running Apache Beam applications with Apache Flink. While the approach discussed here could be applied to any Beam pipeline in general, decide and settle on an error handling strategy that suits your use case.&lt;/p&gt;
 
-&lt;p&gt;For your application to be vulnerable &lt;code class=&quot;highlighter-rouge&quot;&gt;log4j-core&lt;/code&gt; has to be in your classpath.&lt;/p&gt;
+&lt;p&gt;Apache Beam pipeline may throw exceptions while processing data. Some of these errors are transient (e.g., temporary difficulty accessing an external service), but some are permanent, such as errors caused by corrupt or unparseable input data.&lt;/p&gt;
 
-&lt;p&gt;The vulnerability is only present in &lt;code class=&quot;highlighter-rouge&quot;&gt;log4j-core&lt;/code&gt; &lt;code class=&quot;highlighter-rouge&quot;&gt;2.14.1&lt;/code&gt; and earlier versions.&lt;/p&gt;
+&lt;h3 id=&quot;error-types&quot;&gt;Error Types&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;Non-Transient Errors (Permanent)&lt;/li&gt;
+  &lt;li&gt;Transient Errors (Temporary)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The diagram below illustrates a sample pipeline that reads data from an input stream, does some transformations, and writes data back to a data sink. Transient errors are handled using a checkpoint-based restart strategy, while a dead letter queue approach is used to handle non-transient errors.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/apache-beam/overall-retry-strategy.png&quot; alt=&quot;Retry strategies: dead letter queue approach, pipeline restart&quot; width=&quot;100%&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Since a non-transient error will continue to occur as long as it is not corrected, there’s no point in retrying such errors. Beam’s DoFn instances process elements in arbitrary bundles. If an exception is thrown for any element in the bundle and it is not caught, it’ll cause the Flink job to be restarted. Flink runner then has to recreate the operators. The states of these operators will be restored from the last successful checkpoint. For example, the read offset of the recovered source operator will then have a safe offset to restart from. When running in streaming mode, unless a retry threshold is set, a bundle including a failing item will be retried indefinitely, which may cause the pipeline to permanently stall. So it is a must to catch all non-transient errors.&lt;/p&gt;
+
+&lt;h2 id=&quot;handling-non-transient-errors&quot;&gt;Handling Non-Transient Errors&lt;/h2&gt;
+
+&lt;h3 id=&quot;handling-with-a-tupletag&quot;&gt;Handling with a TupleTag&lt;/h3&gt;
+
+&lt;p&gt;In this approach, exceptions caused due to non-transient errors should be caught within the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DoFn.ProcessElement&lt;/code&gt; method. And we’d log the errors as we normally would. But instead of dropping the failed element, branch the outputs to write failed elements into a separate PCollection object as follows.&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;processElement&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;ProcessContext&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;output&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;objectMapper&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;writeValueAsString&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;element&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()));&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;no&quot;&gt;LOG&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;severe&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Failed due to non-transient error {} - adding to dead letter queue&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;element&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;sideOutput&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;deadLetterTupleTag&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;element&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}).&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;withOutputTags&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;successTag&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;TupleTagList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;of&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;deadLetterTag&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)));&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;These elements can then be written to a database, or a message queue for later inspection, by using another transform.&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;outputPCollectionTupple&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;deadLetterTag&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;apply&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;WriteToDeadLetterQueue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;());&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;handling-with-beams-withfailure&quot;&gt;Handling with Beam’s WithFailure&lt;/h3&gt;
+
+&lt;p&gt;WithFailure is a type of exception handler provided by Beam for writing transforms that can handle exceptions raised during the processing of elements. The exception handler would receive an object of type WithFailures.ExceptionElement as the input along with the original input element that was being processed when the exception was raised.
+WithFailure may not be suitable for transforms that may throw both transient, and non-transient errors. Since it would catch every type of exception, we won’t be able to utilize Flink’s retry capabilities even to retry transient errors.&lt;/p&gt;
+
+&lt;h2 id=&quot;transient-errors-temporary&quot;&gt;Transient Errors (Temporary)&lt;/h2&gt;
+
+&lt;p&gt;The DoFn’s may fail due to transient errors such as temporary outages, or exceptions thrown due to external service failures. Instead of catching such exceptions (dead letter queue approach), we could let Flink retry such failed operations.&lt;/p&gt;
+
+&lt;p&gt;When a failure happens, Flink needs to restart the failed task and other affected tasks to recover the job to a normal state. Restart strategies and failover strategies are used to control the task restarting.&lt;/p&gt;
+
+&lt;div class=&quot;alert alert-primary&quot; role=&quot;alert&quot;&gt;
+Checkpointing should be enabled explicitly, otherwise “no restart” strategy is used.
+&lt;/div&gt;
+
+&lt;p&gt;When checkpointing is enabled Flink would recover the state from the last successful checkpoint. By default ‘fixed-delay’ restart strategy is used for streaming jobs, with infinite retries every 10 seconds.&lt;/p&gt;
+
+&lt;h2 id=&quot;differentiate-between-transient--non-transient-errors&quot;&gt;Differentiate Between Transient &amp;amp; Non-Transient Errors&lt;/h2&gt;
+
+&lt;p&gt;An error could be identified as a transient or non-transient error based on the Java type of the exception being thrown. Unless the exception is known to be due to a transient error (an error that could eventually recover by retrying), that exception should be considered as a non-transient error.&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;CustomDoFn&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;I&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;O&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;extends&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;DoFn&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;I&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;O&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+    &lt;span class=&quot;nd&quot;&gt;@ProcessElement&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;processElement&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;ProcessContext&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;process&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;handleException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;protected&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;handleException&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;instanceof&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;TransientErrorException&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;..)&lt;/span&gt;
+          &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;how-exceptions-propagate&quot;&gt;How Exceptions Propagate&lt;/h2&gt;
+
+&lt;p&gt;The following diagram shows how exceptions propagate in Apache Beam. Since transient exceptions are not caught, those exceptions will cause Flink’s restart strategy to kick in.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/apache-beam/beam-exception-propagation.png&quot; alt=&quot;Exception propagation in Apache Beam&quot; width=&quot;100%&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;recovery-and-retry-behavior&quot;&gt;Recovery and Retry Behavior&lt;/h2&gt;
+
+&lt;p&gt;When a task failure happens, Flink restarts the failed task and other affected tasks. The last successful checkpoint is then used to recover the state including the corresponding stream positions.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/apache-beam/flink-restore-behavior.png&quot; alt=&quot;Retry and recovery behavior of Flink Runner&quot; width=&quot;100%&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Assume a scenario where the pipeline consumed four messages, M1, M2, M3, and M4. M1 and M2 were already sunk downstream. M3 and M4 are currently in processing.&lt;/p&gt;
+
+&lt;p&gt;When PubsubIO is being used as the source operator, message acknowledgment happens at the time of checkpoint finalization. So in the above example, only M1, and M2 are acknowledged. Say the pipeline fails to process M4 due to a transient error, this would cause related tasks to be restarted starting from the last successful checkpoint. So M3 and M4 will be replayed, starting from the source operator.&lt;/p&gt;
+
+&lt;p&gt;If the source operator is a KafkaIO for example, when the task restarts, the operator state will be recovered with properties such as the latest offset consumed so far, that are stored in the last successful checkpoint.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><category term="apache-beam" /><category term="flink" /><summary type="html">This guide discusses one of the approaches to retry errors when running Apache Beam applications with Apache Flink. While the approach discussed here could be applied to any Beam pipeline in general, decide and settle on an error handling strategy that suits your use case.</summary></entry><entry><title type="html">CVE-2021-44228 Fixing Log4J2 Vulnerability in Spring Boot</title><link href="https://www.linuxdeveloper.space/log4j-vulnerability-fix/" rel="alternate" type="text/html" title="CVE-2021-44228 Fixing Log4J2 Vulnerability in Spring Boot" /><published>2021-12-11T07:30:00+00:00</published><updated>2021-12-11T07:30:00+00:00</updated><id>https://www.linuxdeveloper.space/log4j-vulnerability-fix</id><content type="html" xml:base="https://www.linuxdeveloper.space/log4j-vulnerability-fix/">&lt;p&gt;&lt;strong&gt;How to check my application is vulnerable?&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;For your application to be vulnerable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;log4j-core&lt;/code&gt; has to be in your classpath.&lt;/p&gt;
+
+&lt;p&gt;The vulnerability is only present in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;log4j-core&lt;/code&gt; &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2.14.1&lt;/code&gt; and earlier versions.&lt;/p&gt;
 
 &lt;p&gt;For Maven projects:&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./mvnw dependency:list | grep log4j
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./mvnw dependency:list | grep log4j
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;For Gradle:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./gradlew dependencies | grep log4j
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;./gradlew dependencies | grep log4j
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Once you grep the console output, check whether log4j-core is present in your dependencies list. 
-You can ignore &lt;code class=&quot;highlighter-rouge&quot;&gt;log4j-to-slf4j&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;log4j-api&lt;/code&gt; dependencies in your grep output as these two were included by the &lt;code class=&quot;highlighter-rouge&quot;&gt;spring-boot-starter-logging&lt;/code&gt; and cannot be exploited on their own. 
-Only applications that include &lt;code class=&quot;highlighter-rouge&quot;&gt;log4j-core&lt;/code&gt; and accept user input to format log messages are vulnerable.&lt;/p&gt;
+You can ignore &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;log4j-to-slf4j&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;log4j-api&lt;/code&gt; dependencies in your grep output as these two were included by the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;spring-boot-starter-logging&lt;/code&gt; and cannot be exploited on their own. 
+Only applications that include &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;log4j-core&lt;/code&gt; and accept user input to format log messages are vulnerable.&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;Fixes&lt;/strong&gt;&lt;/p&gt;
 
@@ -24,9 +118,9 @@ Only applications that include &lt;code class=&quot;highlighter-rouge&quot;&gt;l
 
 &lt;ul&gt;
   &lt;li&gt;Upgrade log4j to 2.15.0 or newer&lt;/li&gt;
-  &lt;li&gt;Remove &lt;code class=&quot;highlighter-rouge&quot;&gt;org.apache.logging.log4j.core.lookupJndiLookup&lt;/code&gt; class from the classpath&lt;/li&gt;
+  &lt;li&gt;Remove &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;org.apache.logging.log4j.core.lookupJndiLookup&lt;/code&gt; class from the classpath&lt;/li&gt;
   &lt;li&gt;Switch to SLF4J&lt;/li&gt;
-&lt;/ul&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">How to check my application is vulnerable?</summary></entry><entry><title type="html">Running SonarQube in ECS</title><link href="https://www.linuxdeveloper.space/sonarqube-in-ecs/" rel="alternate" type="text/html" title="Running SonarQube in ECS" /><published>2021-02-24T18:00:00+00:00</published><updated>2021-02-24T18:00:00+00:00</updated><id>https://www.linuxdeveloper.space/sonarqube-in-ecs</id><content type="html" xml:base="https://www.linuxdeveloper.space/sonarqube-in-ecs/">&lt;p&gt;This guide briefs the steps required to deploy SonarQube Server in Amazon ECS. An ECS task definition needs to be created which is then used to launch SoanrQube as a service within Amazon ECS. Ready-made docker images for different SonarQube editions and versions can be found in Docker Hub, which we’ll be using for the deployment.&lt;/p&gt;
+&lt;/ul&gt;</content><author><name>Gayan Weerakutti</name></author><category term="linux" /><category term="security" /><category term="spring" /><summary type="html">How to check my application is vulnerable?</summary></entry><entry><title type="html">Running SonarQube in ECS</title><link href="https://www.linuxdeveloper.space/sonarqube-in-ecs/" rel="alternate" type="text/html" title="Running SonarQube in ECS" /><published>2021-02-24T18:00:00+00:00</published><updated>2021-02-24T18:00:00+00:00</updated><id>https://www.linuxdeveloper.space/sonarqube-in-ecs</id><content type="html" xml:base="https://www.linuxdeveloper.space/sonarqube-in-ecs/">&lt;p&gt;This guide briefs the steps required to deploy SonarQube Server in Amazon ECS. An ECS task definition needs to be created which is then used to launch SoanrQube as a service within Amazon ECS. Ready-made docker images for different SonarQube editions and versions can be found in Docker Hub, which we’ll be using for the deployment.&lt;/p&gt;
 
 &lt;p&gt;Create an EFS file system to be used with SonarQube
 When running SonarQube in ECS, persistent storage such as an EFS volume is required to prevent data loss. Otherwise, essential server data could be lost in case the container restarts or terminates. It also helps when updating the server to a new version or upgrading to a higher edition.&lt;/p&gt;
@@ -59,13 +153,13 @@ When running SonarQube in ECS, persistent storage such as an EFS volume is requi
 
 &lt;p&gt;So disallow memory-mapping altogether,  enter the following Docker CMD parameters, into the input field named ‘Command’.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;-Dsonar.search.javaAdditionalOpts=-Dnode.store.allow_mmap=false
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;-Dsonar.search.javaAdditionalOpts=-Dnode.store.allow_mmap=false
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h4 id=&quot;environment-variables&quot;&gt;Environment variables&lt;/h4&gt;
 &lt;p&gt;The following environment variables should be set. These are referenced by the SonarQube docker image and is required to be able to successfully run the application.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SONAR_JDBC_URL
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SONAR_JDBC_URL
 SONAR_JDBC_PASSWORD
 SONAR_JDBC_USERNAME
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
@@ -76,7 +170,7 @@ SONAR_JDBC_USERNAME
 
 &lt;p&gt;Under ‘STORAGE AND LOGGING’, add the following mount points to your EFS volume.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/opt/sonarqube/data
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/opt/sonarqube/data
 /opt/sonarqube/extensions
 /opt/sonarqube/logs
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
@@ -115,7 +209,7 @@ SONAR_JDBC_USERNAME
 
 &lt;p&gt;Make sure that the security group attached to the service instance has an inbound rule that allows TCP 9000. Also add an inbound rule of type NFS, for the instance to be able to access the EFS volume created. Once the task is up and running, the SonarQube server should be accessible via the private IP of the running task and port 9000.&lt;/p&gt;
 
-&lt;p&gt;Additionally, one could set up DNS routes, so to have convenient access to the server.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">This guide briefs the steps required to deploy SonarQube Server in Amazon ECS. An ECS task definition needs to be created which is then used to launch SoanrQube as a service within Amazon ECS. Ready-made docker images for different SonarQube editions and versions can be found in Docker Hub, which we’ll be using for the deployment.</summary></entry><entry><title type="html">Traverse Fractured Space Time - Indie Game Review</title><link href="https://www.linuxdeveloper.space/garvity-review/" rel="alternate" type="text/html" title="Traverse Fractured Space Time - Indie Game Review" /><published>2020-01-16T19:20:00+00:00</published><updated>2020-01-16T19:20:00+00:00</updated><id>https://www.linuxdeveloper.space/garvity-review</id><content type="html" xml:base="https://www.linuxdeveloper.space/garvity-review/">&lt;p&gt;&lt;em&gt;The following is a game review written by Wahaj, a tech enthusiast, writer, and aspiring physicist, about my first ever indie title, Gravity. Since this being a Linux blog, I’m also happy to announce that this game falls under the #MadeOnLinux category.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Additionally, one could set up DNS routes, so to have convenient access to the server.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><category term="sonarqube" /><category term="ecs" /><summary type="html">This guide briefs the steps required to deploy SonarQube Server in Amazon ECS. An ECS task definition needs to be created which is then used to launch SoanrQube as a service within Amazon ECS. Ready-made docker images for different SonarQube editions and versions can be found in Docker Hub, which we’ll be using for the deployment.</summary></entry><entry><title type="html">Traverse Fractured Space Time - Indie Game Review</title><link href="https://www.linuxdeveloper.space/garvity-review/" rel="alternate" type="text/html" title="Traverse Fractured Space Time - Indie Game Review" /><published>2020-01-16T19:20:00+00:00</published><updated>2020-01-16T19:20:00+00:00</updated><id>https://www.linuxdeveloper.space/garvity-review</id><content type="html" xml:base="https://www.linuxdeveloper.space/garvity-review/">&lt;p&gt;&lt;em&gt;The following is a game review written by Wahaj, a tech enthusiast, writer, and aspiring physicist, about my first ever indie title, Gravity. Since this being a Linux blog, I’m also happy to announce that this game falls under the #MadeOnLinux category.&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;a href=&quot;https://play.google.com/store/apps/details?id=defaulttm.gravity&quot;&gt;Gravity&lt;/a&gt; is a very recently released Android game from the indie developer Gayan Weerakutti. The developer has been working on the game part-time for over a year, making this something of a passion project. The game itself is a brain teaser style game with a Sci-Fi theme, and gameplay elements designed to match the theme.&lt;/p&gt;
 
@@ -135,11 +229,11 @@ SONAR_JDBC_USERNAME
 
 &lt;h4 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h4&gt;
 
-&lt;p&gt;Overall, Gravity looks like a nice indie game that combines a lot of simple but fun gameplay elements, along with charming visuals and sounds. It even manages to have no forced ads that would distract you, despite being available for free on the Google Play Store.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">The following is a game review written by Wahaj, a tech enthusiast, writer, and aspiring physicist, about my first ever indie title, Gravity. Since this being a Linux blog, I’m also happy to announce that this game falls under the #MadeOnLinux category.</summary></entry><entry><title type="html">SonarQube Pull Request Decoration</title><link href="https://www.linuxdeveloper.space/sonarqube-pr-decoration/" rel="alternate" type="text/html" title="SonarQube Pull Request Decoration" /><published>2019-11-24T05:30:18+00:00</published><updated>2019-11-24T05:30:18+00:00</updated><id>https://www.linuxdeveloper.space/sonarqube-pr-decoration</id><content type="html" xml:base="https://www.linuxdeveloper.space/sonarqube-pr-decoration/">&lt;h4 id=&quot;pull-request-decoration-did-not-happen&quot;&gt;Pull request decoration did not happen&lt;/h4&gt;
+&lt;p&gt;Overall, Gravity looks like a nice indie game that combines a lot of simple but fun gameplay elements, along with charming visuals and sounds. It even manages to have no forced ads that would distract you, despite being available for free on the Google Play Store.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><category term="gaming" /><summary type="html">The following is a game review written by Wahaj, a tech enthusiast, writer, and aspiring physicist, about my first ever indie title, Gravity. Since this being a Linux blog, I’m also happy to announce that this game falls under the #MadeOnLinux category.</summary></entry><entry><title type="html">SonarQube Pull Request Decoration</title><link href="https://www.linuxdeveloper.space/sonarqube-pr-decoration/" rel="alternate" type="text/html" title="SonarQube Pull Request Decoration" /><published>2019-11-24T05:30:18+00:00</published><updated>2019-11-24T05:30:18+00:00</updated><id>https://www.linuxdeveloper.space/sonarqube-pr-decoration</id><content type="html" xml:base="https://www.linuxdeveloper.space/sonarqube-pr-decoration/">&lt;h4 id=&quot;pull-request-decoration-did-not-happen&quot;&gt;Pull request decoration did not happen&lt;/h4&gt;
 
 &lt;p&gt;If you got this warning I recommend that you first enable debug logs on your SonarQube server. Then perform a pull request analysis again while inspecting the &lt;a href=&quot;https://docs.sonarqube.org/latest/instance-administration/system-info/#header-2&quot;&gt;ce.log&lt;/a&gt;.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tail --follow sonar-dir/logs/ce.log
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tail --follow sonar-dir/logs/ce.log
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;If you see these warnings, most probably the system clock of your server is to blame.&lt;/p&gt;
@@ -154,20 +248,20 @@ SONAR_JDBC_USERNAME
 
 &lt;p&gt;To synchronize a system clock to real time, the most recommended solution is to install is chrony.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt install chrony
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt install chrony
 sudo systemctl restart chrony.service
 sudo systemctl enable chrony.service
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;If using a RHEL based distro, run:&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum install chrony
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum install chrony
 systemctl start chronyd
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;To check whether there is an actual time drift, issue the following command&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ chronyc tracking
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ chronyc tracking
 Reference ID    : A9FEA97B (169.254.169.123)
 Stratum         : 4
 Ref time (UTC)  : Sun Nov 24 15:45:37 2019
@@ -183,11 +277,11 @@ Update interval : 71.3 seconds
 Leap status     : Normal
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;As you could see from the output, my System time was drifted by about 46 seconds. If there is a time drift, chrony will automatically adjust the clock gradually. You can verify that by issuing &lt;code class=&quot;highlighter-rouge&quot;&gt;$ chronyc tracking&lt;/code&gt; command and observing the &lt;code class=&quot;highlighter-rouge&quot;&gt;System time&lt;/code&gt; line of the output. Once the ‘System time’ property is driven closer to zero, you could try re-running a PR analysis and PR decoration should work fine.&lt;/p&gt;
+&lt;p&gt;As you could see from the output, my System time was drifted by about 46 seconds. If there is a time drift, chrony will automatically adjust the clock gradually. You can verify that by issuing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$ chronyc tracking&lt;/code&gt; command and observing the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;System time&lt;/code&gt; line of the output. Once the ‘System time’ property is driven closer to zero, you could try re-running a PR analysis and PR decoration should work fine.&lt;/p&gt;
 
 &lt;h1 id=&quot;socket-time-out&quot;&gt;Socket time out&lt;/h1&gt;
 
-&lt;p&gt;Increase javaOpts …&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">Pull request decoration did not happen</summary></entry><entry><title type="html">Install Unity3D on Linux</title><link href="https://www.linuxdeveloper.space/install-unity-linux/" rel="alternate" type="text/html" title="Install Unity3D on Linux" /><published>2019-01-06T17:02:23+00:00</published><updated>2019-01-06T17:02:23+00:00</updated><id>https://www.linuxdeveloper.space/install-unity-linux</id><content type="html" xml:base="https://www.linuxdeveloper.space/install-unity-linux/">&lt;p&gt;I’ve been running Unity on my Debian / Ubuntu machines for so long and never have any issues whatsoever. As of now Ubuntu 18.04, and CentOS 7 are listed as the officially supported distros. I’m currently developing a sci-fi brain teaser which is currently on closed beta on Google Play, is solely build on Unity Linux. Again, it’s no different from running it on a Windows machine.&lt;/p&gt;
+&lt;p&gt;Increase javaOpts …&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><category term="jekyll" /><category term="update" /><summary type="html">Pull request decoration did not happen</summary></entry><entry><title type="html">Install Unity3D on Linux</title><link href="https://www.linuxdeveloper.space/install-unity-linux/" rel="alternate" type="text/html" title="Install Unity3D on Linux" /><published>2019-01-06T17:02:23+00:00</published><updated>2019-01-06T17:02:23+00:00</updated><id>https://www.linuxdeveloper.space/install-unity-linux</id><content type="html" xml:base="https://www.linuxdeveloper.space/install-unity-linux/">&lt;p&gt;I’ve been running Unity on my Debian / Ubuntu machines for so long and never have any issues whatsoever. As of now Ubuntu 18.04, and CentOS 7 are listed as the officially supported distros. I’m currently developing a sci-fi brain teaser which is currently on closed beta on Google Play, is solely build on Unity Linux. Again, it’s no different from running it on a Windows machine.&lt;/p&gt;
 
 &lt;p&gt;The preferred way of installing Unity on Linux is by first installing Unity Hub.&lt;/p&gt;
 
@@ -202,7 +296,7 @@ Leap status     : Normal
 &lt;p&gt;Once downloaded, you may need to give execute permission to the UnityHubSetup.AppImage&lt;/p&gt;
 
 &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; /path/to/download/dir
-&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;chmod +x UnityHub.AppImage
+&lt;span class=&quot;nb&quot;&gt;sudo chmod&lt;/span&gt; +x UnityHub.AppImage
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Then run the setup file. Either run it from the terminal or just open the file from a file manager.&lt;/p&gt;
@@ -222,7 +316,7 @@ install. Unity Hub will automatically download and install it for you. One can h
 
 &lt;p&gt;If your Unity crashes, most probably your graphics driver is to blame.&lt;/p&gt;
 
-&lt;p&gt;If you have an Intel graphic card that is 2007 or newer, try uninstalling &lt;code class=&quot;highlighter-rouge&quot;&gt;xserver-xorg-video-intel&lt;/code&gt;.
+&lt;p&gt;If you have an Intel graphic card that is 2007 or newer, try uninstalling &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xserver-xorg-video-intel&lt;/code&gt;.
 Your system will then default to use the builtin modesetting driver instead.&lt;/p&gt;
 
 &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;dpkg &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; xserver-xorg-video-intel
@@ -231,13 +325,13 @@ Your system will then default to use the builtin modesetting driver instead.&lt;
 
 &lt;p&gt;If that still not fix your issue, try asking in the forums.&lt;/p&gt;
 
-&lt;p&gt;If it’s not a known issue, you could always send a bug report by opening an issue in &lt;a href=&quot;https://issuetracker.unity3d.com/&quot;&gt;Issue Tracker&lt;/a&gt; and Unity team probably will get back to you.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">I’ve been running Unity on my Debian / Ubuntu machines for so long and never have any issues whatsoever. As of now Ubuntu 18.04, and CentOS 7 are listed as the officially supported distros. I’m currently developing a sci-fi brain teaser which is currently on closed beta on Google Play, is solely build on Unity Linux. Again, it’s no different from running it on a Windows machine.</summary></entry><entry><title type="html">Recovering corrupted NTFS partitions in a Linux machine</title><link href="https://www.linuxdeveloper.space/recovering-corrupted-ntfs-partitions/" rel="alternate" type="text/html" title="Recovering corrupted NTFS partitions in a Linux machine" /><published>2018-08-14T05:12:18+00:00</published><updated>2018-08-14T05:12:18+00:00</updated><id>https://www.linuxdeveloper.space/recovering-corrupted-ntfs-partitions</id><content type="html" xml:base="https://www.linuxdeveloper.space/recovering-corrupted-ntfs-partitions/">&lt;h4 id=&quot;what-if-my-partition-is-not-showing-up-or-gone-missing&quot;&gt;What if my partition is not showing up or gone missing?&lt;/h4&gt;
+&lt;p&gt;If it’s not a known issue, you could always send a bug report by opening an issue in &lt;a href=&quot;https://issuetracker.unity3d.com/&quot;&gt;Issue Tracker&lt;/a&gt; and Unity team probably will get back to you.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><category term="linux" /><category term="unity" /><summary type="html">I’ve been running Unity on my Debian / Ubuntu machines for so long and never have any issues whatsoever. As of now Ubuntu 18.04, and CentOS 7 are listed as the officially supported distros. I’m currently developing a sci-fi brain teaser which is currently on closed beta on Google Play, is solely build on Unity Linux. Again, it’s no different from running it on a Windows machine.</summary></entry><entry><title type="html">Recovering corrupted NTFS partitions in a Linux machine</title><link href="https://www.linuxdeveloper.space/recovering-corrupted-ntfs-partitions/" rel="alternate" type="text/html" title="Recovering corrupted NTFS partitions in a Linux machine" /><published>2018-08-14T05:12:18+00:00</published><updated>2018-08-14T05:12:18+00:00</updated><id>https://www.linuxdeveloper.space/recovering-corrupted-ntfs-partitions</id><content type="html" xml:base="https://www.linuxdeveloper.space/recovering-corrupted-ntfs-partitions/">&lt;h4 id=&quot;what-if-my-partition-is-not-showing-up-or-gone-missing&quot;&gt;What if my partition is not showing up or gone missing?&lt;/h4&gt;
 
 &lt;p&gt;In that case, TestDisk could help. It is a disk utility designed to help people recover their lost partitions.&lt;/p&gt;
 
 &lt;p&gt;To install it, here in my case on Debian, I’ll do&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sudo apt-get install testdisk
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ sudo apt-get install testdisk
 $ testdisk
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
@@ -258,7 +352,7 @@ $ testdisk
   &lt;li&gt;
     &lt;p&gt;Use one or more of the following commands to find out the label of your corrupted partition.&lt;/p&gt;
 
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; diskpart list disk
+    &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; diskpart list disk
  diskpart select disk
  diskpart list volumes
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
@@ -266,19 +360,19 @@ $ testdisk
   &lt;li&gt;
     &lt;p&gt;Once done exit from diskpart and run&lt;/p&gt;
 
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; chkdsk /f /r D:
+    &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; chkdsk /f /r D:
  where D: is the drive letter of the corrupted partition. 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;If you have got better solutions, let us know in the comment section.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">What if my partition is not showing up or gone missing?</summary></entry><entry><title type="html">Fixing JHBuild Errors</title><link href="https://www.linuxdeveloper.space/fixing-jhbuild-issues/" rel="alternate" type="text/html" title="Fixing JHBuild Errors" /><published>2018-08-14T05:12:18+00:00</published><updated>2018-08-14T05:12:18+00:00</updated><id>https://www.linuxdeveloper.space/fixing-jhbuild-issues</id><content type="html" xml:base="https://www.linuxdeveloper.space/fixing-jhbuild-issues/">&lt;p&gt;&lt;strong&gt;Fixing no native package found errors&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;If you have got better solutions, let us know in the comment section.&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><category term="linux" /><summary type="html">What if my partition is not showing up or gone missing?</summary></entry><entry><title type="html">Fixing JHBuild Errors</title><link href="https://www.linuxdeveloper.space/fixing-jhbuild-issues/" rel="alternate" type="text/html" title="Fixing JHBuild Errors" /><published>2018-08-14T05:12:18+00:00</published><updated>2018-08-14T05:12:18+00:00</updated><id>https://www.linuxdeveloper.space/fixing-jhbuild-issues</id><content type="html" xml:base="https://www.linuxdeveloper.space/fixing-jhbuild-issues/">&lt;p&gt;&lt;strong&gt;Fixing no native package found errors&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;JHBuild uses apt-file to locate packages in which a given file belongs to.&lt;/p&gt;
 
 &lt;p&gt;When apt-file cannot locate the relevant packages for you, JHBuild would give you with informational warnings such as:&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;I: Installing dependencies on system: libsystemd-journal libtiff
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;I: Installing dependencies on system: libsystemd-journal libtiff
 I: Using apt-file to search for providers; this may be slow. Please wait.
 I: No native package found for libsystemd-journal (/libsystemd-journal.pc)
 I: No native package found for libtiff (/usr/include/tiff.h)
@@ -286,14 +380,14 @@ I: No native package found for libtiff (/usr/include/tiff.h)
 
 &lt;p&gt;In such cases, first make sure that your apt-file database is up-to-date.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt-file update
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt-file update
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Then re-run the process. JHBuild might still fails to complete the process. This could be due to several reasons. So for instance if apt-file finds several packages which includes the same file, JHBuild would fail to decide on which package to install. In that case we’d have to find the most appropriate pacakge and install it manaully. Also the actual package name can be sligtly different from the name stated in the warning.&lt;/p&gt;
 
 &lt;p&gt;To find the relevant package which includes the given file, you could run:&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-file search path/to/missing.file
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-file search path/to/missing.file
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;You could also use Ubuntu’s package archive search on web, instead of apt-file. But apt-file usually is more convenient.&lt;/p&gt;
@@ -306,7 +400,7 @@ I: No native package found for libtiff (/usr/include/tiff.h)
 
 &lt;p&gt;For example here the missing libsystemd.pc belongs to the package named ‘libsystemd-dev’&lt;/p&gt;
 
-&lt;p&gt;Therefore running &lt;code class=&quot;highlighter-rouge&quot;&gt;apt-get install libsystemd-dev&lt;/code&gt; should fix it.&lt;/p&gt;
+&lt;p&gt;Therefore running &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apt-get install libsystemd-dev&lt;/code&gt; should fix it.&lt;/p&gt;
 
 &lt;p&gt;&lt;strong&gt;Fixing No matching system package installed&lt;/strong&gt;&lt;/p&gt;
 
@@ -314,7 +408,7 @@ I: No native package found for libtiff (/usr/include/tiff.h)
 
 &lt;p&gt;Example cases:&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;libsystemd-journal (libsystemd-journal.pc, required=201)
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;libsystemd-journal (libsystemd-journal.pc, required=201)
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Ubuntu’s Launchpad provides compatibility package for libsystemd-journal-dev (&amp;gt;201) which includes the required .pc file. Downloading and installing latest binary .deb file for your distribution should fix it.&lt;/p&gt;
@@ -323,7 +417,7 @@ I: No native package found for libtiff (/usr/include/tiff.h)
 
 &lt;p&gt;In that case do,&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-cache search package-name
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-cache search package-name
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;This will list down all the packages for the given keyword: package-name&lt;/p&gt;
@@ -335,20 +429,20 @@ On a Debian based system the package name would probably contain a *-dev suffix.
 
 &lt;p&gt;Run the following in a terminal&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-cache search libselinux
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-cache search libselinux
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;On my system the output is,&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;libselinux1 - SELinux runtime shared libraries
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;libselinux1 - SELinux runtime shared libraries
 libselinux1-dev - SELinux development headers
 libsemanage1 - SELinux policy management library
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;So installing ‘libselinux1-dev’ should fix the configure error.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-get install libselinux1-dev
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">Fixing no native package found errors</summary></entry><entry><title type="html">Install Windows after Ubuntu/Linux</title><link href="https://www.linuxdeveloper.space/install-windows-after-linux/" rel="alternate" type="text/html" title="Install Windows after Ubuntu/Linux" /><published>2017-10-11T05:30:18+00:00</published><updated>2017-10-11T05:30:18+00:00</updated><id>https://www.linuxdeveloper.space/install-windows-after-linux</id><content type="html" xml:base="https://www.linuxdeveloper.space/install-windows-after-linux/">&lt;p&gt;As you know, the most common, and probably the most recommended way of dual booting Ubuntu and Windows is to install Windows first and then Ubuntu. But what if you want to install Windows second on a computer with Ubuntu/Linux already installed?&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;apt-get install libselinux1-dev
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Gayan Weerakutti</name></author><category term="linux" /><summary type="html">Fixing no native package found errors</summary></entry><entry><title type="html">Install Windows after Ubuntu/Linux</title><link href="https://www.linuxdeveloper.space/install-windows-after-linux/" rel="alternate" type="text/html" title="Install Windows after Ubuntu/Linux" /><published>2017-10-11T05:30:18+00:00</published><updated>2017-10-11T05:30:18+00:00</updated><id>https://www.linuxdeveloper.space/install-windows-after-linux</id><content type="html" xml:base="https://www.linuxdeveloper.space/install-windows-after-linux/">&lt;p&gt;As you know, the most common, and probably the most recommended way of dual booting Ubuntu and Windows is to install Windows first and then Ubuntu. But what if you want to install Windows second on a computer with Ubuntu/Linux already installed?&lt;/p&gt;
 
 &lt;p&gt;This guide assumes that you have Ubuntu already installed on your system, and will guide you through installing Windows 7/8/8.1/10 when you have a working Ubuntu/Linux partition.&lt;/p&gt;
 
@@ -371,7 +465,7 @@ libsemanage1 - SELinux policy management library
   &lt;li&gt;
     &lt;p&gt;Find Linux Partitions&lt;/p&gt;
 
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; $ lsblk -f
+    &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; $ lsblk -f
  NAME                  FSTYPE     MOUNTPOINT
  sda                                                                            
  ├─sda1                ext4       /boot
@@ -381,20 +475,20 @@ libsemanage1 - SELinux policy management library
 
     &lt;p&gt;In my case,&lt;/p&gt;
 
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;/dev/sda1&lt;/code&gt; is the Linux boot partition&lt;/p&gt;
+    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/dev/sda1&lt;/code&gt; is the Linux boot partition&lt;/p&gt;
 
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;/dev/sda2&lt;/code&gt; is the Linux root partition&lt;/p&gt;
+    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/dev/sda2&lt;/code&gt; is the Linux root partition&lt;/p&gt;
 
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;/dev/sda3&lt;/code&gt; is the Windows partition&lt;/p&gt;
+    &lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/dev/sda3&lt;/code&gt; is the Windows partition&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
     &lt;p&gt;Setup a Chroot Environment&lt;/p&gt;
 
     &lt;p&gt;Now we’ll be repairing our old grub bootloader in a chroot environment.&lt;/p&gt;
 
-    &lt;p&gt;Mount your root filesystem under &lt;code class=&quot;highlighter-rouge&quot;&gt;/mnt&lt;/code&gt;&lt;/p&gt;
+    &lt;p&gt;Mount your root filesystem under &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/mnt&lt;/code&gt;&lt;/p&gt;
 
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; sudo mount /dev/sda2 /mnt/
+    &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; sudo mount /dev/sda2 /mnt/
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
 
     &lt;blockquote&gt;
@@ -402,16 +496,16 @@ libsemanage1 - SELinux policy management library
 sudo mount -t btrfs -o subvol=@ /dev/sda2 /mnt/&lt;/p&gt;
     &lt;/blockquote&gt;
 
-    &lt;p&gt;Run &lt;code class=&quot;highlighter-rouge&quot;&gt;ls /mnt&lt;/code&gt; to verify that the correct partition is mounted. It should list the content of your root.&lt;/p&gt;
+    &lt;p&gt;Run &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ls /mnt&lt;/code&gt; to verify that the correct partition is mounted. It should list the content of your root.&lt;/p&gt;
 
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; $ ls /mnt
+    &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; $ ls /mnt
  bin   dev  home        lib64       media  opt   root  sbin  sys  usr  vmlinuz
  boot  etc  initrd.img  lost+found  mnt    proc  run   srv   tmp  var  vmlinuz.old
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
 
     &lt;p&gt;Mount the boot partition. (SKIP if you don’t have a separate boot partition)&lt;/p&gt;
 
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; sudo mount /dev/sda1 /mnt/boot
+    &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; sudo mount /dev/sda1 /mnt/boot
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
 
     &lt;p&gt;If you have an EFI partition you should mount that also. It is basically a small FAT32 partition around 100mb. Please refer to the section on how to &lt;a href=&quot;#reinstalling-grub-in-an-efi-based-system&quot;&gt;reinstall Grub in an EFI system&lt;/a&gt;.&lt;/p&gt;
@@ -426,7 +520,7 @@ sudo mount -t btrfs -o subvol=@ /dev/sda2 /mnt/&lt;/p&gt;
 
     &lt;p&gt;Let’s chroot into our existing Ubuntu/Linux system on the hard disk.&lt;/p&gt;
 
-    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; sudo chroot /mnt
+    &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; sudo chroot /mnt
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
   &lt;/li&gt;
   &lt;li&gt;
@@ -447,7 +541,7 @@ sudo mount -t btrfs -o subvol=@ /dev/sda2 /mnt/&lt;/p&gt;
 
 &lt;h5 id=&quot;case-2&quot;&gt;Case #2&lt;/h5&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ lsblk -f
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ lsblk -f
 NAME                  FSTYPE     MOUNTPOINT
 sda                                                                            
 ├─sda1                ext4       /boot/efi
@@ -455,25 +549,25 @@ sda
 ├─sda3                ntfs       
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Here &lt;code class=&quot;highlighter-rouge&quot;&gt;/dev/sda1&lt;/code&gt; is the EFI partition and &lt;code class=&quot;highlighter-rouge&quot;&gt;/dev/sda2&lt;/code&gt; is the root.&lt;/p&gt;
+&lt;p&gt;Here &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/dev/sda1&lt;/code&gt; is the EFI partition and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/dev/sda2&lt;/code&gt; is the root.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo mount /dev/sda2 /mnt/
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo mount /dev/sda2 /mnt/
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Mount EFI partition under ‘/mnt/boot/efi’&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo mount /dev/sda1 /mnt/boot/efi
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo mount /dev/sda1 /mnt/boot/efi
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;Forgetting to do so will result in errors being thrown while trying to execute grub-install: “/boot/efi does not appear to be the EFI partition”&lt;/p&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;As shown previously, bind the &lt;code class=&quot;highlighter-rouge&quot;&gt;/dev&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;/dev/pts&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;/proc&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;/sys&lt;/code&gt; directories.&lt;/p&gt;
+&lt;p&gt;As shown previously, bind the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/dev&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/dev/pts&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/proc&lt;/code&gt;, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/sys&lt;/code&gt; directories.&lt;/p&gt;
 
 &lt;p&gt;Finally,&lt;/p&gt;
 
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;chroot /mnt
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo chroot&lt;/span&gt; /mnt
 grub-install
 &lt;span class=&quot;nb&quot;&gt;exit&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
@@ -485,4 +579,4 @@ grub-install
 &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;reboot
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Happy Dual-Booting!&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><summary type="html">As you know, the most common, and probably the most recommended way of dual booting Ubuntu and Windows is to install Windows first and then Ubuntu. But what if you want to install Windows second on a computer with Ubuntu/Linux already installed?</summary></entry></feed>
+&lt;p&gt;Happy Dual-Booting!&lt;/p&gt;</content><author><name>Gayan Weerakutti</name></author><category term="jekyll" /><category term="update" /><summary type="html">As you know, the most common, and probably the most recommended way of dual booting Ubuntu and Windows is to install Windows first and then Ubuntu. But what if you want to install Windows second on a computer with Ubuntu/Linux already installed?</summary></entry></feed>

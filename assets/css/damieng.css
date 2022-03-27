@@ -845,9 +845,6 @@ textarea {
 input,
 button,
 select,
-textarea {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
 label {
   display: block;
   margin-bottom: 5px;
@@ -1184,7 +1181,7 @@ input.search-query {
   display: inline-block;
   *display: inline;
   *zoom: 1;
-  margin-bottom: 0;
+  margin-bottom: 10px;
   vertical-align: middle;
 }
 .form-search .hide,
@@ -3426,3 +3423,7 @@ ul#zx-origins-index .title {
   margin-top: 12px;
 }
 
+.header ul li {
+  padding-left: 10px;
+  padding-left: 10px;
+}
