@@ -36,3 +36,8 @@ Theme
 --
 
 When change is made to jekyll-theme-linuxdev repository, do a `bundle install`, or update the revision value in Gemfile.lock manually.
+
+References
+----------
+
+ - [Dependency version](https://pages.github.com/versions/)
