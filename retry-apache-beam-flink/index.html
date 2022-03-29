@@ -106,6 +106,37 @@ Checkpointing should be enabled explicitly, otherwise “no restart” strategy 
 
 <p>When checkpointing is enabled Flink would recover the state from the last successful checkpoint. By default ‘fixed-delay’ restart strategy is used for streaming jobs, with infinite retries every 10 seconds.</p>
 
+<p>The following pipeline options are provided by the Flink runner, which you could pass as program arguements to enable checkpointing and to adjust the application’s retry behavior.</p>
+
+<div class="table-responsive">
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col" style="width: 40%;">Option</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>--checkpointingInterval</td>
+      <td>Checkpointing interval in milliseconds</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>--executionRetryDelay</td>
+      <td>Delay in milliseconds between retires</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>--numberOfExecutionRetries</td>
+      <td>You may use a larger value if you've coded your app to retry only for transient errors. So the pipeline could eventually recover itself once the underlying error go away</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 <h2 id="differentiate-between-transient--non-transient-errors">Differentiate Between Transient &amp; Non-Transient Errors</h2>
 
 <p>An error could be identified as a transient or non-transient error based on the Java type of the exception being thrown. Unless the exception is known to be due to a transient error (an error that could eventually recover by retrying), that exception should be considered as a non-transient error.</p>

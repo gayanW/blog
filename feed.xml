@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2022-03-29T06:13:12+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Dev Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2022-03-29T18:26:11+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Dev Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
 </subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Error Handling &amp;amp; Retry with Apache Beam and Flink</title><link href="https://www.linuxdeveloper.space/retry-apache-beam-flink/" rel="alternate" type="text/html" title="Error Handling &amp;amp; Retry with Apache Beam and Flink" /><published>2022-03-26T18:30:00+00:00</published><updated>2022-03-26T18:30:00+00:00</updated><id>https://www.linuxdeveloper.space/retry-apache-beam-flink</id><content type="html" xml:base="https://www.linuxdeveloper.space/retry-apache-beam-flink/">&lt;p&gt;This guide discusses one of the approaches to retry errors when running Apache Beam applications with Apache Flink. While the approach discussed here could be applied to any Beam pipeline in general, decide and settle on an error handling strategy that suits your use case.&lt;/p&gt;
 
 &lt;p&gt;Apache Beam pipeline may throw exceptions while processing data. Some of these errors are transient (e.g., temporary difficulty accessing an external service), but some are permanent, such as errors caused by corrupt or unparseable input data.&lt;/p&gt;
@@ -53,6 +53,37 @@ Checkpointing should be enabled explicitly, otherwise “no restart” strategy 
 &lt;/div&gt;
 
 &lt;p&gt;When checkpointing is enabled Flink would recover the state from the last successful checkpoint. By default ‘fixed-delay’ restart strategy is used for streaming jobs, with infinite retries every 10 seconds.&lt;/p&gt;
+
+&lt;p&gt;The following pipeline options are provided by the Flink runner, which you could pass as program arguements to enable checkpointing and to adjust the application’s retry behavior.&lt;/p&gt;
+
+&lt;div class=&quot;table-responsive&quot;&gt;
+&lt;table class=&quot;table&quot;&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th scope=&quot;col&quot;&gt;#&lt;/th&gt;
+      &lt;th scope=&quot;col&quot; style=&quot;width: 40%;&quot;&gt;Option&lt;/th&gt;
+      &lt;th scope=&quot;col&quot;&gt;Description&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;th scope=&quot;row&quot;&gt;1&lt;/th&gt;
+      &lt;td&gt;--checkpointingInterval&lt;/td&gt;
+      &lt;td&gt;Checkpointing interval in milliseconds&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th scope=&quot;row&quot;&gt;2&lt;/th&gt;
+      &lt;td&gt;--executionRetryDelay&lt;/td&gt;
+      &lt;td&gt;Delay in milliseconds between retires&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;th scope=&quot;row&quot;&gt;3&lt;/th&gt;
+      &lt;td&gt;--numberOfExecutionRetries&lt;/td&gt;
+      &lt;td&gt;You may use a larger value if you've coded your app to retry only for transient errors. So the pipeline could eventually recover itself once the underlying error go away&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
 
 &lt;h2 id=&quot;differentiate-between-transient--non-transient-errors&quot;&gt;Differentiate Between Transient &amp;amp; Non-Transient Errors&lt;/h2&gt;
 
