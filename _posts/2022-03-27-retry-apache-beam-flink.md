@@ -68,7 +68,7 @@ An error could be identified as a transient or non-transient error based on the 
 class CustomDoFn<I, O> extends DoFn<I, O> {
 
     @ProcessElement
-    public void processElement(ProcessContext c) {
+    public void processElement(ProcessContext c) throws Exception {
         try {
             process(c);
 
@@ -77,12 +77,19 @@ class CustomDoFn<I, O> extends DoFn<I, O> {
         }
     }
 
-    protected void handleException(Exception e) {
-        if (e instanceof TransientErrorException || ..)
-          throw e;
+    protected void handleException(Exception e) throws Exception {
+        Throwable cause = ExceptionUtil.getRootCause(e);
+
+        if (cause instanceof TransientErrorException || ..)
+            throw e;
     }
+
+    protected abstract void process(DoFn<I, O>.ProcessContext c) throws Exception;
+
 }
 ```
+
+To eliminate the need to write exception handling logic in every user-defined DoFn, you may define a `CustomDoFn` class that your other `DoFn` classes could inherit from.
 
 ## How Exceptions Propagate
 
