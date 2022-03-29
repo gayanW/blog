@@ -113,7 +113,7 @@ Checkpointing should be enabled explicitly, otherwise “no restart” strategy 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">CustomDoFn</span><span class="o">&lt;</span><span class="no">I</span><span class="o">,</span> <span class="no">O</span><span class="o">&gt;</span> <span class="kd">extends</span> <span class="nc">DoFn</span><span class="o">&lt;</span><span class="no">I</span><span class="o">,</span> <span class="no">O</span><span class="o">&gt;</span> <span class="o">{</span>
 
     <span class="nd">@ProcessElement</span>
-    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">processElement</span><span class="o">(</span><span class="nc">ProcessContext</span> <span class="n">c</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">processElement</span><span class="o">(</span><span class="nc">ProcessContext</span> <span class="n">c</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
         <span class="k">try</span> <span class="o">{</span>
             <span class="n">process</span><span class="o">(</span><span class="n">c</span><span class="o">);</span>
 
@@ -122,12 +122,19 @@ Checkpointing should be enabled explicitly, otherwise “no restart” strategy 
         <span class="o">}</span>
     <span class="o">}</span>
 
-    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">handleException</span><span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-        <span class="k">if</span> <span class="o">(</span><span class="n">e</span> <span class="k">instanceof</span> <span class="nc">TransientErrorException</span> <span class="o">||</span> <span class="o">..)</span>
-          <span class="k">throw</span> <span class="n">e</span><span class="o">;</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">handleException</span><span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+        <span class="nc">Throwable</span> <span class="n">cause</span> <span class="o">=</span> <span class="nc">ExceptionUtil</span><span class="o">.</span><span class="na">getRootCause</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+
+        <span class="k">if</span> <span class="o">(</span><span class="n">cause</span> <span class="k">instanceof</span> <span class="nc">TransientErrorException</span> <span class="o">||</span> <span class="o">..)</span>
+            <span class="k">throw</span> <span class="n">e</span><span class="o">;</span>
     <span class="o">}</span>
+
+    <span class="kd">protected</span> <span class="kd">abstract</span> <span class="kt">void</span> <span class="nf">process</span><span class="o">(</span><span class="nc">DoFn</span><span class="o">&lt;</span><span class="no">I</span><span class="o">,</span> <span class="no">O</span><span class="o">&gt;.</span><span class="na">ProcessContext</span> <span class="n">c</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span><span class="o">;</span>
+
 <span class="o">}</span>
 </code></pre></div></div>
+
+<p>To eliminate the need to write exception handling logic in every user-defined DoFn, you may define a <code class="language-plaintext highlighter-rouge">CustomDoFn</code> class that your other <code class="language-plaintext highlighter-rouge">DoFn</code> classes could inherit from.</p>
 
 <h2 id="how-exceptions-propagate">How Exceptions Propagate</h2>
 
