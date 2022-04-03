@@ -1,5 +1,59 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2022-03-29T18:26:11+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Dev Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
-</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Error Handling &amp;amp; Retry with Apache Beam and Flink</title><link href="https://www.linuxdeveloper.space/retry-apache-beam-flink/" rel="alternate" type="text/html" title="Error Handling &amp;amp; Retry with Apache Beam and Flink" /><published>2022-03-26T18:30:00+00:00</published><updated>2022-03-26T18:30:00+00:00</updated><id>https://www.linuxdeveloper.space/retry-apache-beam-flink</id><content type="html" xml:base="https://www.linuxdeveloper.space/retry-apache-beam-flink/">&lt;p&gt;This guide discusses one of the approaches to retry errors when running Apache Beam applications with Apache Flink. While the approach discussed here could be applied to any Beam pipeline in general, decide and settle on an error handling strategy that suits your use case.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.0">Jekyll</generator><link href="https://www.linuxdeveloper.space/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.linuxdeveloper.space/" rel="alternate" type="text/html" /><updated>2022-04-03T11:06:54+00:00</updated><id>https://www.linuxdeveloper.space/feed.xml</id><title type="html">Linux Dev Space</title><subtitle>A free colloborative space for Linux developers to share their tuts and tips on Linux and Open Source.
+</subtitle><author><name>Gayan Weerakutti</name></author><entry><title type="html">Connecting to WireGuard VPN Tunnel</title><link href="https://www.linuxdeveloper.space/configure-wireguard-client/" rel="alternate" type="text/html" title="Connecting to WireGuard VPN Tunnel" /><published>2022-04-01T18:30:00+00:00</published><updated>2022-04-01T18:30:00+00:00</updated><id>https://www.linuxdeveloper.space/configure-wireguard-client</id><content type="html" xml:base="https://www.linuxdeveloper.space/configure-wireguard-client/">&lt;p&gt;This guide provides the minimal first-step instructions required to connect to any WireGuard based VPN server.
+If you also want to set up your own WireGuard server, you may start by reading the official &lt;a href=&quot;https://www.wireguard.com/quickstart/&quot;&gt;quickstart&lt;/a&gt; guide.&lt;/p&gt;
+
+&lt;p&gt;I’ll be using a free-to-use, WireGuard based VPN service, SecurityKiss. 
+They provide a limited free plan and affordable paid plans. No email registration is required to use it. The same steps should apply to other WireGuard based VPN servers as well.&lt;/p&gt;
+
+&lt;p&gt;Start by downloading a VPN client configuration file from &lt;a href=&quot;https://securitykiss.com/download.html&quot;&gt;securitykiss.com/download&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;The downloaded file would contain the following details.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;[Interface]
+Address=&amp;lt;interface-ip&amp;gt;
+PrivateKey=&amp;lt;client-private-key&amp;gt;
+DNS=8.8.8.8
+
+[Peer]
+PublicKey=&amp;lt;server-public-key&amp;gt;
+Endpoint=&amp;lt;server-public-ip&amp;gt;:7668
+AllowedIPs=0.0.0.0/0,::/0
+PersistentKeepalive=25
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;SecurityKiss would generate all the placeholder values including the private key. 
+So you don’t have to make any modifications to the downloaded config file to be able to use it.&lt;/p&gt;
+
+&lt;p&gt;Then install the WireGuard client. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;wireguard&lt;/code&gt; meta package include command line tools required to connect to WireGuard VPN servers.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo apt update
+sudo apt install wireguard resolvconf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;resolvconf&lt;/code&gt; is internally used by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;wireguard&lt;/code&gt; to set the interface’s DNS servers specified in the configuration file.&lt;/p&gt;
+
+&lt;p&gt;Copy or move the config file to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/wireguard/&lt;/code&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo cp US_New_York_1.conf /etc/wireguard/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Then to connect to the VPN tunnel:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sudo systemctl enable wg-quick@US_New_York_1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Make sure to replace &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;US_New_York_1&lt;/code&gt; with the name of your configuration file.&lt;/p&gt;
+
+&lt;p&gt;This will brings up a new network interface with properties supplied in the given configuration file.
+The name of the network interface would be as same as the name of the configuration file.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;systemctl enable&lt;/code&gt; is used to make &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;wg-quick.service&lt;/code&gt; start at boot.&lt;/p&gt;
+
+&lt;p&gt;To find the details about the newly added network interface, run:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ip address show
+ip address show US_New_York_1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Gayan Weerakutti</name></author><category term="vpn" /><category term="security" /><summary type="html">This guide provides the minimal first-step instructions required to connect to any WireGuard based VPN server. If you also want to set up your own WireGuard server, you may start by reading the official quickstart guide.</summary></entry><entry><title type="html">Error Handling &amp;amp; Retry with Apache Beam and Flink</title><link href="https://www.linuxdeveloper.space/retry-apache-beam-flink/" rel="alternate" type="text/html" title="Error Handling &amp;amp; Retry with Apache Beam and Flink" /><published>2022-03-26T18:30:00+00:00</published><updated>2022-03-26T18:30:00+00:00</updated><id>https://www.linuxdeveloper.space/retry-apache-beam-flink</id><content type="html" xml:base="https://www.linuxdeveloper.space/retry-apache-beam-flink/">&lt;p&gt;This guide discusses one of the approaches to retry errors when running Apache Beam applications with Apache Flink. While the approach discussed here could be applied to any Beam pipeline in general, decide and settle on an error handling strategy that suits your use case.&lt;/p&gt;
 
 &lt;p&gt;Apache Beam pipeline may throw exceptions while processing data. Some of these errors are transient (e.g., temporary difficulty accessing an external service), but some are permanent, such as errors caused by corrupt or unparseable input data.&lt;/p&gt;
 
