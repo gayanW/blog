@@ -20,10 +20,21 @@ bundle config --delete local.GEM_NAME
 Build locally
 --
 
+Build with the ruby version used by [GitHub Pages](https://pages.github.com/versions/)
+
+    rbenv install 2.7.4
+    rbenv local 2.7.4
+    bundle install
+
+However, on Mac M1, it require us to use a slightly newer version of ruby.
+
+    rbenv install 2.7.8
+    rbenv local 2.7.8
+    bundle install
+
 To run the site locally,
 
     bundle exec jekyll serve
-
 
 Find the official instructions [here](https://docs.github.com/en/pages/setting-up-a-github-pages-site-with-jekyll/testing-your-github-pages-site-locally-with-jekyll).
 
